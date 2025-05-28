@@ -11,6 +11,7 @@ from __future__ import annotations
 
 import asyncio
 import os
+import re
 from contextlib import asynccontextmanager
 from datetime import datetime, timedelta, timezone
 from pathlib import Path
@@ -39,6 +40,16 @@ api_keys_and_clients = initialize_clients()
 
 # テンプレートディレクトリのパスを指定
 templates = Jinja2Templates(directory="templates")
+
+
+def convert_urls_to_links(text: str) -> str:
+    """テキスト内のURLをHTMLリンクに変換する"""
+    url_pattern = r'https?://[^\s<>"]+|www\.[^\s<>"]+'
+    return re.sub(
+        url_pattern,
+        lambda m: f'<a href="{m.group(0)}" target="_blank" rel="noopener noreferrer">{m.group(0)}</a>',
+        text,
+    )
 
 
 app = FastAPI()
@@ -73,6 +84,8 @@ async def read_root(request: Request):
 
     try:
         ai_message: str = await asyncio.to_thread(generate_ai_reply, prompt, 0.99)
+        # URLをリンクに変換
+        ai_message = convert_urls_to_links(ai_message)
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 

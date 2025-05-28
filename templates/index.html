@@ -5,6 +5,6 @@
 
 {% block content %}
 <div class="d-flex justify-content-center">
-  <p class="welcome-message" style="max-width: 50%; text-align: center;">{{ message }}</p>
+  <p class="welcome-message" style="max-width: 50%; text-align: center;">{{ message | safe }}</p>
 </div>
 {% endblock %}
