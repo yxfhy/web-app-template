@@ -1,11 +1,11 @@
 # routers/auth.py
-from database import get_session
 from fastapi import APIRouter, Depends, Form, HTTPException, Request, status
 from fastapi.responses import HTMLResponse, RedirectResponse
 from fastapi.templating import Jinja2Templates
 from passlib.context import CryptContext
 from sqlmodel import Session, select
 
+from database import get_session
 from models.user import User
 
 router = APIRouter(tags=["auth"])
@@ -51,8 +51,13 @@ async def signup_post(
         )
 
     hashed_pw = pwd_context.hash(password)
-    session.add(User(username=username, hashed_password=hashed_pw))
+    user = User(username=username, hashed_password=hashed_pw)
+    session.add(user)
     session.commit()
+
+    # サインアップ成功時に自動的にログイン状態にする
+    request.session["user_id"] = user.id
+    request.session["username"] = user.username
 
     # ポップアップ → ホーム
     html = """

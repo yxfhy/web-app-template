@@ -21,6 +21,7 @@ from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
 from starlette.middleware.sessions import SessionMiddleware
 
+from database import create_db_and_tables
 from routers import auth, memo
 from utils.utils import generate_ai_reply, initialize_clients
 
@@ -41,6 +42,9 @@ templates = Jinja2Templates(directory="templates")
 
 
 app = FastAPI()
+
+# データベーステーブルの作成
+create_db_and_tables()
 
 # ★セッション（署名付き Cookie）を有効化
 SESSION_SECRET_KEY = os.getenv("SESSION_SECRET_KEY")
