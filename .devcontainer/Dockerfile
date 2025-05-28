@@ -32,6 +32,7 @@ RUN pip install  --no-cache-dir tweepy>=4.14
 RUN pip install  --no-cache-dir jinja2
 RUN pip install  --no-cache-dir sqlmodel passlib[bcrypt] itsdangerous
 RUN pip install --no-cache-dir beautifulsoup4
+RUN pip install --no-cache-dir requests
 
 COPY . /app
 
