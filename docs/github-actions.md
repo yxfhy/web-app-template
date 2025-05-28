@@ -166,6 +166,14 @@ jobs:
 4. **LightSailでの pull エラー**
    - 現在、`docker pull` 実行時にエラーが発生中。【次フェーズで対処】
 
+5. **データベースファイルの事前準備**
+   - デプロイ前に、Lightsailインスタンス上で以下のコマンドを実行してデータベースファイルを作成する必要があります：
+   ```bash
+   mkdir -p /home/ubuntu/server_secrets
+   touch /home/ubuntu/server_secrets/server_web_app.db
+   ```
+   - このファイルが存在しない場合、Dockerのボリュームマウント機能により自動的にディレクトリが作成されてしまう可能性があります。
+
 以上の内容を Phase 3-1 としてまとめました。
 
 ## 6 AWS CLI のインストール
