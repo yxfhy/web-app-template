@@ -1,4 +1,7 @@
 # routers/auth.py
+import os
+
+from dotenv import load_dotenv
 from fastapi import APIRouter, Depends, Form, HTTPException, Request, status
 from fastapi.responses import HTMLResponse, RedirectResponse
 from fastapi.templating import Jinja2Templates
@@ -13,6 +16,14 @@ router = APIRouter(tags=["auth"])
 templates = Jinja2Templates(directory="templates")
 
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
+
+# 環境変数の読み込み
+load_dotenv()
+
+# 管理パスワードを環境変数から取得
+ADMIN_PASSWORD = os.getenv("ADMIN_PASSWORD")
+if not ADMIN_PASSWORD:
+    raise ValueError("環境変数 ADMIN_PASSWORD が設定されていません")
 
 
 # -------------------------------------------------------------------
@@ -40,9 +51,17 @@ async def signup_post(
     request: Request,
     username: str = Form(...),
     password: str = Form(...),
+    admin_password: str = Form(...),
     session: Session = Depends(get_session),
 ):
     """ユーザー登録処理（重複チェック＋ハッシュ化保存）"""
+
+    # 管理パスワードの検証
+    if admin_password != ADMIN_PASSWORD:
+        error = "管理パスワードが正しくありません。"
+        return templates.TemplateResponse(
+            "signup.html", {"request": request, "error": error}, status_code=400
+        )
 
     if session.exec(select(User).where(User.username == username)).first():
         error = "そのユーザー名は既に使われています。"
