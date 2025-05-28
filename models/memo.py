@@ -43,8 +43,13 @@ def create_memo(
     return db_memo
 
 
-def get_user_memos(db, username: str) -> List[MemoModel]:
-    return db.query(MemoModel).filter(MemoModel.username == username).all()
+def get_user_memos(
+    db, username: str, search_query: Optional[str] = None
+) -> List[MemoModel]:
+    query = db.query(MemoModel).filter(MemoModel.username == username)
+    if search_query:
+        query = query.filter(MemoModel.content.ilike(f"%{search_query}%"))
+    return query.all()
 
 
 def delete_memo(db, memo_id: str, username: str) -> bool:

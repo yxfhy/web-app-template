@@ -23,7 +23,15 @@ def convert_urls_to_links(text: str) -> str:
     def replace_url(match):
         url = match.group(0)
         title = get_url_title(url)
-        display_text = f"{title} ({url})" if title else url
+
+        # URLが長すぎる場合は省略
+        max_url_length = 50
+        if len(url) > max_url_length:
+            url_display = url[:max_url_length] + "..."
+        else:
+            url_display = url
+
+        display_text = f"{title} ({url_display})" if title else url_display
         return (
             f'<a href="{url}" target="_blank" '
             f'rel="noopener noreferrer">{display_text}</a>'
@@ -49,6 +57,7 @@ async def memo_page(
     sort: str = "newest",
     limit: int = 10,  # デフォルトは10件
     page: int = 1,  # デフォルトは1ページ目
+    search: str = None,  # 検索クエリ
     db: Session = Depends(get_db),
 ):
     # セッションからユーザー名を取得
@@ -64,8 +73,8 @@ async def memo_page(
     if page < 1:
         page = 1
 
-    # ユーザーのメモを取得
-    user_memos = get_user_memos(db, username)
+    # ユーザーのメモを取得（検索クエリがある場合は検索）
+    user_memos = get_user_memos(db, username, search)
 
     # 並び替え
     if sort == "oldest":
@@ -96,6 +105,7 @@ async def memo_page(
             "page": page,
             "total_pages": total_pages,
             "total_memos": total_memos,
+            "search": search,  # 検索クエリをテンプレートに渡す
         },
     )
 

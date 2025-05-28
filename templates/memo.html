@@ -19,7 +19,10 @@
                                 </button>
                             </div>
                         </div>
-                        <button type="submit" class="btn btn-primary mt-2">投稿</button>
+                        <div class="mt-2">
+                            <button type="submit" class="btn btn-primary">投稿</button>
+                            <button type="button" class="btn btn-primary" onclick="clearMemoForm()">クリア</button>
+                        </div>
                     </form>
                 </div>
             </div>
@@ -30,6 +33,14 @@
                     <div class="d-flex justify-content-between align-items-center mb-3">
                         <h5 class="card-title mb-0">メモ一覧</h5>
                         <div class="d-flex gap-2">
+                            <!-- 検索フォーム -->
+                            <form method="GET" action="/memo" class="d-flex me-2">
+                                <input type="hidden" name="sort" value="{{ sort }}">
+                                <input type="hidden" name="limit" value="{{ limit }}">
+                                <input type="text" name="search" class="form-control form-control-sm" placeholder="メモを検索..." value="{{ search or '' }}">
+                                <button type="submit" class="btn btn-primary btn-sm ms-2">検索</button>
+                                <button type="button" class="btn btn-primary btn-sm ms-2" onclick="clearSearchForm()">クリア</button>
+                            </form>
                             <div class="btn-group me-2">
                                 <a href="/memo?sort=newest&limit={{ limit }}&page={{ page }}" class="btn btn-outline-secondary btn-sm {% if sort == 'newest' %}active{% endif %}">新しい順</a>
                                 <a href="/memo?sort=oldest&limit={{ limit }}&page={{ page }}" class="btn btn-outline-secondary btn-sm {% if sort == 'oldest' %}active{% endif %}">古い順</a>
@@ -108,6 +119,19 @@ async function pasteFromClipboard() {
     } catch (err) {
         alert('クリップボードからの読み取りに失敗しました。ブラウザの設定を確認してください。');
         console.error('クリップボード読み取りエラー:', err);
+    }
+}
+
+function clearMemoForm() {
+    const textarea = document.getElementById('content');
+    textarea.value = '';
+}
+
+function clearSearchForm() {
+    const searchInput = document.querySelector('input[name="search"]');
+    if (searchInput) {
+        searchInput.value = '';
+        searchInput.form.submit();
     }
 }
 </script>
