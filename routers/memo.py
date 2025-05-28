@@ -65,8 +65,8 @@ async def memo_page(
     if not username:
         return RedirectResponse(url="/login", status_code=303)
 
-    # 表示件数の制限を10, 50, 100のいずれかに制限
-    if limit not in [10, 50, 100]:
+    # 表示件数の制限を10, 50のいずれかに制限
+    if limit not in [10, 50]:
         limit = 10
 
     # ページ番号の制限（1以上）
