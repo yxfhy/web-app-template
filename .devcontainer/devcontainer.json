@@ -1,0 +1,53 @@
+{
+  "name": "web-app-template (py3.11)",
+  // このフォルダ内の Dockerfile をビルド
+  "build": {
+    "dockerfile": "Dockerfile"
+  },
+
+  // ホスト ↔ コンテナ間のマウント
+  "mounts": [
+    "source=${localEnv:HOME}/data,target=/data,type=bind"
+  ],
+
+  // 追加 run オプション
+  "runArgs": [
+    "-v",
+    "${localEnv:HOME}/.gitconfig:/etc/gitconfig:ro",
+    "--publish", "5678:5678",
+    "--publish", "8000:8000",
+    "--name", "web-app-template"
+  ],
+
+  // 自動ポートフォワード
+  "forwardPorts": [5678, 8000],
+
+  // VS Code 拡張機能 & 設定
+  "customizations": {
+    "vscode": {
+      "extensions": [
+        "ms-python.python",
+        "ms-python.black-formatter",
+        "ms-python.isort",
+        "ms-python.flake8",
+        "GitHub.copilot",
+        "GitHub.copilot-chat",
+        "ms-toolsai.jupyter",
+        "ms-python.debugpy"
+      ],
+      "settings": {
+        "[python]": {
+          "editor.defaultFormatter": "ms-python.black-formatter",
+          "editor.formatOnSave": true,
+          "editor.codeActionsOnSave": {
+            "source.organizeImports": "explicit"
+          }
+        },
+        "isort.args": ["--profile", "black"]
+      }
+    }
+  },
+
+  // 公式 Python イメージは root ユーザーのみなので root を指定
+  "remoteUser": "root"
+}

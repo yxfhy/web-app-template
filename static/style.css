@@ -1,0 +1,80 @@
+/* templates/static/style.css */
+
+body {
+  font-family: Arial, sans-serif;
+  background-color: #f7f7f7;
+  color: #333;
+  margin: 0;
+  padding: 0;
+}
+
+header {
+  background-color: #4a5568; /* 少し落ち着いたグレー */
+  color: #fff;
+  padding: 1rem;
+  text-align: center;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+main {
+  max-width: 480px;
+  margin: 2rem auto;
+  padding: 1rem;
+  background-color: #fff;
+  border-radius: 0.5rem;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.05);
+}
+
+h2 {
+  margin-top: 0;
+  font-size: 1.5rem;
+  text-align: center;
+}
+
+form {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+label {
+  font-weight: bold;
+  margin-bottom: 0.25rem;
+}
+
+input[type="text"],
+input[type="password"] {
+  padding: 0.5rem;
+  font-size: 1rem;
+  border: 1px solid #cbd5e0;
+  border-radius: 0.25rem;
+  transition: border-color 0.2s ease;
+}
+
+input[type="text"]:focus,
+input[type="password"]:focus {
+  outline: none;
+  border-color: #63b3ed; /* フォーカス時は淡いブルー */
+}
+
+button {
+  padding: 0.75rem;
+  font-size: 1rem;
+  border: none;
+  border-radius: 0.25rem;
+  cursor: not-allowed;
+  background-color: #a0aec0; /* 無効状態のグレー */
+  color: #fff;
+  transition: background-color 0.2s ease;
+}
+
+button:enabled {
+  cursor: pointer;
+  background-color: #3182ce; /* 有効時はブルー */
+}
+
+p {
+  font-size: 0.875rem;
+  color: #718096;
+  text-align: center;
+}

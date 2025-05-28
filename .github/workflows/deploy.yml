@@ -1,0 +1,71 @@
+name: CI/CD Pipeline
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  build_and_deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: コード取得
+        uses: actions/checkout@v3
+
+      - name: AWS Credentials 設定
+        uses: aws-actions/configure-aws-credentials@v2
+        with:
+          aws-access-key-id:     ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region:            ${{ secrets.AWS_REGION }}
+
+      - name: ECR ログイン
+        id: login-ecr
+        uses: aws-actions/amazon-ecr-login@v1
+
+      - name: Docker イメージビルド＆プッシュ
+        run: |
+          IMAGE_TAG=${{ github.sha }}
+          docker build \
+            -f .devcontainer/Dockerfile \
+            -t web-app-template:$IMAGE_TAG \
+            .
+          docker tag web-app-template:$IMAGE_TAG ${{ steps.login-ecr.outputs.registry }}/web-app-template:$IMAGE_TAG
+          docker push ${{ steps.login-ecr.outputs.registry }}/web-app-template:$IMAGE_TAG
+        env:
+          DOCKER_BUILDKIT: 1
+
+      - name: Lightsailへデプロイ
+        uses: appleboy/ssh-action@v0.1.5
+        with:
+          host:     ${{ secrets.LIGHTSAIL_HOST }}
+          username: ${{ secrets.LIGHTSAIL_USER }}
+          key:      ${{ secrets.LIGHTSAIL_SSH_PRIVATE_KEY }}
+          script: |
+            IMAGE_TAG=${{ github.sha }}
+
+            # インスタンス上に AWS CLI がインストールされていることを確認してください
+            # 未インストールの場合: 
+            # curl "https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip" -o "awscliv2.zip"
+            # unzip awscliv2.zip
+            # sudo ./aws/install
+
+            aws ecr get-login-password --region ${{ secrets.AWS_REGION }} \
+              | docker login --username AWS --password-stdin ${{ steps.login-ecr.outputs.registry }}
+
+            docker pull ${{ steps.login-ecr.outputs.registry }}/web-app-template:$IMAGE_TAG
+
+            # コンテナ名 web-app-template があるかどうかを調べ、
+            # あれば停止して削除
+            if docker ps -a --format '{{.Names}}' | grep -w web-app-template > /dev/null; then
+              docker stop web-app-template
+              docker rm   web-app-template
+            fi
+            
+            docker run -d \
+              --restart unless-stopped \
+              -p 8000:8000 -p 5678:5678 \
+              -v /home/ubuntu/server_secrets/server_web_app.db:/app/web_app.db \
+              --name web-app-template \
+              ${{ steps.login-ecr.outputs.registry }}/web-app-template:$IMAGE_TAG
