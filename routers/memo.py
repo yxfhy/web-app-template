@@ -1,3 +1,4 @@
+import re
 import uuid
 from datetime import datetime, timedelta, timezone
 
@@ -11,6 +12,17 @@ from models.memo import MemoModel, create_memo, delete_memo, get_db, get_user_me
 
 router = APIRouter()
 templates = Jinja2Templates(directory="templates")
+
+
+def convert_urls_to_links(text: str) -> str:
+    """テキスト内のURLをHTMLリンクに変換する"""
+    url_pattern = r'https?://[^\s<>"]+|www\.[^\s<>"]+'
+    return re.sub(
+        url_pattern,
+        lambda m: f'<a href="{m.group(0)}" target="_blank" '
+        f'rel="noopener noreferrer">{m.group(0)}</a>',
+        text,
+    )
 
 
 # メモのデータモデル（API用）
@@ -58,6 +70,9 @@ async def create_memo_route(
     jst = timezone(timedelta(hours=9))
     now = datetime.now(jst)
     memo_id = str(uuid.uuid4())
+
+    # URLをリンクに変換
+    content = convert_urls_to_links(content)
 
     create_memo(db, memo_id, content, now, username)
     return RedirectResponse(url="/memo", status_code=303)
