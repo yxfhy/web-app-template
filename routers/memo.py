@@ -9,6 +9,7 @@ from pydantic import BaseModel
 from sqlalchemy.orm import Session
 
 from models.memo import MemoModel, create_memo, delete_memo, get_db, get_user_memos
+from utils.utils import get_url_title
 
 router = APIRouter()
 templates = Jinja2Templates(directory="templates")
@@ -17,12 +18,14 @@ templates = Jinja2Templates(directory="templates")
 def convert_urls_to_links(text: str) -> str:
     """テキスト内のURLをHTMLリンクに変換する"""
     url_pattern = r'https?://[^\s<>"]+|www\.[^\s<>"]+'
-    return re.sub(
-        url_pattern,
-        lambda m: f'<a href="{m.group(0)}" target="_blank" '
-        f'rel="noopener noreferrer">{m.group(0)}</a>',
-        text,
-    )
+
+    def replace_url(match):
+        url = match.group(0)
+        title = get_url_title(url)
+        display_text = f"{title} ({url})" if title else url
+        return f'<a href="{url}" target="_blank" rel="noopener noreferrer">{display_text}</a>'
+
+    return re.sub(url_pattern, replace_url, text)
 
 
 # メモのデータモデル（API用）

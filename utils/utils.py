@@ -1,5 +1,8 @@
 import os
+from typing import Optional
 
+import requests
+from bs4 import BeautifulSoup
 from dotenv import load_dotenv
 from openai import OpenAI
 
@@ -94,6 +97,18 @@ def generate_ai_reply(user_prompt: str, temperature: float) -> str:
         temperature=temperature,
     )
     return response.choices[0].message.content.strip()
+
+
+def get_url_title(url: str) -> Optional[str]:
+    """URLからタイトルを取得する"""
+    try:
+        response = requests.get(url, timeout=5)
+        response.raise_for_status()
+        soup = BeautifulSoup(response.text, "html.parser")
+        title = soup.title.string if soup.title else None
+        return title.strip() if title else None
+    except Exception:
+        return None
 
 
 # if __name__ == "__main__":
