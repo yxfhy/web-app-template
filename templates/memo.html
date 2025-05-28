@@ -103,7 +103,8 @@ async function pasteFromClipboard() {
     try {
         const text = await navigator.clipboard.readText();
         const textarea = document.getElementById('content');
-        textarea.value = text;
+        const currentText = textarea.value;
+        textarea.value = currentText + (currentText ? '\n' : '') + text;
     } catch (err) {
         alert('クリップボードからの読み取りに失敗しました。ブラウザの設定を確認してください。');
         console.error('クリップボード読み取りエラー:', err);
