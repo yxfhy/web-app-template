@@ -1,6 +1,7 @@
 import re
 import uuid
 from datetime import datetime, timedelta, timezone
+from math import ceil
 
 from fastapi import APIRouter, Depends, Form, HTTPException, Request
 from fastapi.responses import HTMLResponse, RedirectResponse
@@ -8,7 +9,7 @@ from fastapi.templating import Jinja2Templates
 from pydantic import BaseModel
 from sqlalchemy.orm import Session
 
-from models.memo import MemoModel, create_memo, delete_memo, get_db, get_user_memos
+from models.memo import create_memo, delete_memo, get_db, get_user_memos
 from utils.utils import get_url_title
 
 router = APIRouter()
@@ -23,7 +24,10 @@ def convert_urls_to_links(text: str) -> str:
         url = match.group(0)
         title = get_url_title(url)
         display_text = f"{title} ({url})" if title else url
-        return f'<a href="{url}" target="_blank" rel="noopener noreferrer">{display_text}</a>'
+        return (
+            f'<a href="{url}" target="_blank" '
+            f'rel="noopener noreferrer">{display_text}</a>'
+        )
 
     return re.sub(url_pattern, replace_url, text)
 
@@ -44,6 +48,7 @@ async def memo_page(
     request: Request,
     sort: str = "newest",
     limit: int = 10,  # デフォルトは10件
+    page: int = 1,  # デフォルトは1ページ目
     db: Session = Depends(get_db),
 ):
     # セッションからユーザー名を取得
@@ -55,6 +60,10 @@ async def memo_page(
     if limit not in [10, 50, 100]:
         limit = 10
 
+    # ページ番号の制限（1以上）
+    if page < 1:
+        page = 1
+
     # ユーザーのメモを取得
     user_memos = get_user_memos(db, username)
 
@@ -64,12 +73,30 @@ async def memo_page(
     else:  # newest
         user_memos.sort(key=lambda x: x.created_at, reverse=True)
 
-    # 表示件数を制限
-    user_memos = user_memos[:limit]
+    # 総ページ数を計算
+    total_memos = len(user_memos)
+    total_pages = ceil(total_memos / limit)
+
+    # ページ番号の制限（最大ページ数以下）
+    if page > total_pages and total_pages > 0:
+        page = total_pages
+
+    # 表示するメモを取得
+    start_idx = (page - 1) * limit
+    end_idx = start_idx + limit
+    user_memos = user_memos[start_idx:end_idx]
 
     return templates.TemplateResponse(
         "memo.html",
-        {"request": request, "memos": user_memos, "sort": sort, "limit": limit},
+        {
+            "request": request,
+            "memos": user_memos,
+            "sort": sort,
+            "limit": limit,
+            "page": page,
+            "total_pages": total_pages,
+            "total_memos": total_memos,
+        },
     )
 
 

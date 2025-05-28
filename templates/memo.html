@@ -31,16 +31,18 @@
                         <h5 class="card-title mb-0">メモ一覧</h5>
                         <div class="d-flex gap-2">
                             <div class="btn-group me-2">
-                                <a href="/memo?sort=newest&limit={{ limit }}" class="btn btn-outline-secondary btn-sm {% if sort == 'newest' %}active{% endif %}">新しい順</a>
-                                <a href="/memo?sort=oldest&limit={{ limit }}" class="btn btn-outline-secondary btn-sm {% if sort == 'oldest' %}active{% endif %}">古い順</a>
+                                <a href="/memo?sort=newest&limit={{ limit }}&page={{ page }}" class="btn btn-outline-secondary btn-sm {% if sort == 'newest' %}active{% endif %}">新しい順</a>
+                                <a href="/memo?sort=oldest&limit={{ limit }}&page={{ page }}" class="btn btn-outline-secondary btn-sm {% if sort == 'oldest' %}active{% endif %}">古い順</a>
                             </div>
                             <div class="btn-group">
-                                <a href="/memo?sort={{ sort }}&limit=10" class="btn btn-outline-secondary btn-sm {% if limit == 10 %}active{% endif %}">10件</a>
-                                <a href="/memo?sort={{ sort }}&limit=50" class="btn btn-outline-secondary btn-sm {% if limit == 50 %}active{% endif %}">50件</a>
-                                <a href="/memo?sort={{ sort }}&limit=100" class="btn btn-outline-secondary btn-sm {% if limit == 100 %}active{% endif %}">100件</a>
+                                <a href="/memo?sort={{ sort }}&limit=10&page=1" class="btn btn-outline-secondary btn-sm {% if limit == 10 %}active{% endif %}">10件</a>
+                                <a href="/memo?sort={{ sort }}&limit=50&page=1" class="btn btn-outline-secondary btn-sm {% if limit == 50 %}active{% endif %}">50件</a>
+                                <a href="/memo?sort={{ sort }}&limit=100&page=1" class="btn btn-outline-secondary btn-sm {% if limit == 100 %}active{% endif %}">100件</a>
                             </div>
                         </div>
                     </div>
+
+                    <!-- メモ一覧 -->
                     {% for memo in memos %}
                     <div class="border-bottom mb-3 pb-3">
                         <div class="d-flex justify-content-start align-items-start">
@@ -54,6 +56,39 @@
                         <small class="text-muted">投稿日時: {{ memo.created_at }}</small>
                     </div>
                     {% endfor %}
+
+                    <!-- ページネーション -->
+                    {% if total_pages > 1 %}
+                    <nav aria-label="メモ一覧のページネーション" class="mt-4">
+                        <ul class="pagination justify-content-center">
+                            <!-- 前のページ -->
+                            <li class="page-item {% if page == 1 %}disabled{% endif %}">
+                                <a class="page-link" href="/memo?sort={{ sort }}&limit={{ limit }}&page={{ page - 1 }}" {% if page == 1 %}tabindex="-1" aria-disabled="true"{% endif %}>
+                                    <i class="bi bi-chevron-left"></i> 前へ
+                                </a>
+                            </li>
+
+                            <!-- ページ番号 -->
+                            {% for p in range(1, total_pages + 1) %}
+                            <li class="page-item {% if p == page %}active{% endif %}">
+                                <a class="page-link" href="/memo?sort={{ sort }}&limit={{ limit }}&page={{ p }}">{{ p }}</a>
+                            </li>
+                            {% endfor %}
+
+                            <!-- 次のページ -->
+                            <li class="page-item {% if page == total_pages %}disabled{% endif %}">
+                                <a class="page-link" href="/memo?sort={{ sort }}&limit={{ limit }}&page={{ page + 1 }}" {% if page == total_pages %}tabindex="-1" aria-disabled="true"{% endif %}>
+                                    次へ <i class="bi bi-chevron-right"></i>
+                                </a>
+                            </li>
+                        </ul>
+                    </nav>
+                    {% endif %}
+
+                    <!-- 総件数表示 -->
+                    <div class="text-center text-muted mt-3">
+                        全{{ total_memos }}件中 {{ (page - 1) * limit + 1 }}-{% if page * limit > total_memos %}{{ total_memos }}{% else %}{{ page * limit }}{% endif %}件を表示
+                    </div>
                 </div>
             </div>
         </div>
