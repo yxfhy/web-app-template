@@ -41,12 +41,19 @@ class Memo(BaseModel):
 
 @router.get("/memo", response_class=HTMLResponse)
 async def memo_page(
-    request: Request, sort: str = "newest", db: Session = Depends(get_db)
+    request: Request,
+    sort: str = "newest",
+    limit: int = 10,  # デフォルトは10件
+    db: Session = Depends(get_db),
 ):
     # セッションからユーザー名を取得
     username = request.session.get("username")
     if not username:
         return RedirectResponse(url="/login", status_code=303)
+
+    # 表示件数の制限を10, 50, 100のいずれかに制限
+    if limit not in [10, 50, 100]:
+        limit = 10
 
     # ユーザーのメモを取得
     user_memos = get_user_memos(db, username)
@@ -57,8 +64,12 @@ async def memo_page(
     else:  # newest
         user_memos.sort(key=lambda x: x.created_at, reverse=True)
 
+    # 表示件数を制限
+    user_memos = user_memos[:limit]
+
     return templates.TemplateResponse(
-        "memo.html", {"request": request, "memos": user_memos, "sort": sort}
+        "memo.html",
+        {"request": request, "memos": user_memos, "sort": sort, "limit": limit},
     )
 
 

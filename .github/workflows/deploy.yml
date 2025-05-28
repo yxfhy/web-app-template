@@ -68,5 +68,6 @@ jobs:
               -p 8000:8000 -p 5678:5678 \
               -v /home/ubuntu/server_secrets/server_web_app.db:/app/web_app.db \
               -v /home/ubuntu/server_secrets/server_dot_env:/app/.env \
+              -v /home/ubuntu/server_secrets/server_memos.db:/app/memos.db \
               --name web-app-template \
               ${{ steps.login-ecr.outputs.registry }}/web-app-template:$IMAGE_TAG
