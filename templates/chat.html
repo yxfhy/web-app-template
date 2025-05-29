@@ -5,7 +5,16 @@
 {% block content %}
 <div class="container mx-auto px-4 py-8">
     <div class="max-w-2xl mx-auto">
-        <h1 class="text-2xl font-bold mb-6">チャット</h1>
+        <div class="flex justify-between items-center mb-6">
+            <h1 class="text-2xl font-bold">チャット</h1>
+            <div class="flex items-center gap-4">
+                <span class="text-gray-600">{{ username }}さん</span>
+                <button id="clear-chat" 
+                        class="bg-red-500 text-white px-4 py-2 rounded-lg hover:bg-red-600 transition-colors">
+                    履歴をクリア
+                </button>
+            </div>
+        </div>
         
         <div id="chat-messages" class="bg-white rounded-lg shadow p-4 mb-4 h-96 overflow-y-auto">
             <!-- メッセージはここに表示されます -->
@@ -41,6 +50,21 @@ marked.setOptions({
     },
     breaks: true,
     gfm: true
+});
+
+// チャット履歴のクリア
+document.getElementById('clear-chat').addEventListener('click', async () => {
+    try {
+        await fetch('/chat/clear', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            }
+        });
+        document.getElementById('chat-messages').innerHTML = '';
+    } catch (error) {
+        console.error('Error:', error);
+    }
 });
 
 document.getElementById('chat-form').addEventListener('submit', async (e) => {
