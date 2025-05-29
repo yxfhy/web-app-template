@@ -68,6 +68,11 @@
                         <div class="d-flex justify-content-start align-items-start">
                             <div class="flex-grow-1 me-3" style="min-width: 0;">
                                 <p class="mb-1 text-start" style="word-wrap: break-word; white-space: pre-wrap; overflow-wrap: break-word;">{{ memo.content | safe }}</p>
+                                {% if 'http://' in memo.content or 'https://' in memo.content %}
+                                <button type="button" class="btn btn-outline-secondary btn-sm mt-2" onclick="copyUrl('{{ memo.content }}')">
+                                    <i class="bi bi-link-45deg"></i> URLをコピー
+                                </button>
+                                {% endif %}
                             </div>
                             <form method="POST" action="/memo/delete/{{ memo.id }}" style="flex-shrink: 0;">
                                 <button type="submit" class="btn btn-danger btn-sm" onclick="return confirm('このメモを削除してもよろしいですか？')">削除</button>
@@ -141,6 +146,17 @@ function clearSearchForm() {
     if (searchInput) {
         searchInput.value = '';
         searchInput.form.submit();
+    }
+}
+
+function copyUrl(content) {
+    // URLを抽出する正規表現
+    const urlRegex = /(https?:\/\/[^\s]+)/g;
+    const urls = content.match(urlRegex);
+    
+    if (urls && urls.length > 0) {
+        // 将来的にクリップボードにコピーする機能を実装
+        console.log('URLをコピー:', urls[0]);
     }
 }
 </script>
