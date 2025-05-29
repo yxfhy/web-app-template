@@ -69,7 +69,7 @@
                             <div class="flex-grow-1 me-3" style="min-width: 0;">
                                 <p class="mb-1 text-start" style="word-wrap: break-word; white-space: pre-wrap; overflow-wrap: break-word;">{{ memo.content | safe }}</p>
                                 {% if '<a href=' in memo.content %}
-                                <button type="button" class="btn btn-outline-secondary btn-sm mt-2" onclick="copyUrl('{{ memo.content }}')">
+                                <button type="button" class="btn btn-outline-secondary btn-sm mt-2 text-white" onclick="copyUrl('{{ memo.content }}')">
                                     <i class="bi bi-link-45deg"></i> URLをコピー
                                 </button>
                                 {% endif %}
