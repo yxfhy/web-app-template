@@ -68,7 +68,7 @@
                         <div class="d-flex justify-content-start align-items-start">
                             <div class="flex-grow-1 me-3" style="min-width: 0;">
                                 <p class="mb-1 text-start" style="word-wrap: break-word; white-space: pre-wrap; overflow-wrap: break-word;">{{ memo.content | safe }}</p>
-                                {% if 'http://' in memo.content or 'https://' in memo.content %}
+                                {% if '<a href=' in memo.content %}
                                 <button type="button" class="btn btn-outline-secondary btn-sm mt-2" onclick="copyUrl('{{ memo.content }}')">
                                     <i class="bi bi-link-45deg"></i> URLをコピー
                                 </button>
@@ -149,14 +149,23 @@ function clearSearchForm() {
     }
 }
 
-function copyUrl(content) {
-    // URLを抽出する正規表現
-    const urlRegex = /(https?:\/\/[^\s]+)/g;
-    const urls = content.match(urlRegex);
-    
-    if (urls && urls.length > 0) {
-        // 将来的にクリップボードにコピーする機能を実装
-        console.log('URLをコピー:', urls[0]);
+async function copyUrl(content) {
+    try {
+        // 一時的なDOM要素を作成してHTMLをパース
+        const tempDiv = document.createElement('div');
+        tempDiv.innerHTML = content;
+        
+        // 最初の<a>タグのhref属性を取得
+        const link = tempDiv.querySelector('a');
+        if (link && link.href) {
+            await navigator.clipboard.writeText(link.href);
+            alert('URLをクリップボードにコピーしました');
+        } else {
+            alert('URLが見つかりませんでした');
+        }
+    } catch (err) {
+        console.error('URLのコピーに失敗しました:', err);
+        alert('URLのコピーに失敗しました');
     }
 }
 </script>
