@@ -5,6 +5,8 @@ from fastapi.responses import HTMLResponse
 from fastapi.templating import Jinja2Templates
 from pydantic import BaseModel
 
+from utils.utils import generate_ai_reply
+
 router = APIRouter(prefix="/chat", tags=["chat"])
 templates = Jinja2Templates(directory="templates")
 
@@ -22,5 +24,8 @@ async def chat_page(request: Request):
 @router.post("/send")
 async def send_message(message: Message):
     """メッセージを送信してAIの応答を取得"""
-    # 現在はダミーレスポンスを返す
-    return {"response": "dummy reply"}
+    try:
+        response = generate_ai_reply(message.message, temperature=0.1)
+        return {"response": response}
+    except Exception as e:
+        return {"response": f"エラーが発生しました: {str(e)}"}
