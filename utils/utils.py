@@ -111,13 +111,44 @@ def get_url_title(url: str) -> Optional[str]:
         return None
 
 
-# if __name__ == "__main__":
-#     # クライアント初期化
-#     initialize_clients()
-#     # 例: ツイートIDを指定して本文取得
-#     tweet_id = input("ツイートIDを入力してください: ")
-#     try:
-#         reply_to_tweet(tweet_id, "system::test_reply")
+class ChatBot:
+    """チャットボットクラス"""
 
-#     except Exception as e:
-#         print("エラー:", e)
+    def __init__(self, temperature: float = 0.1):
+        """メッセージ履歴を保持するリストを初期化"""
+        self.messages = [{"role": "system", "content": SYSTEM_PROMPT}]
+        self.temperature = temperature
+
+        load_dotenv()
+        self.OPENAI_API_KEY = os.getenv("OPENAI_API_KEY")
+        self.OPENAI_MODEL = os.getenv("OPENAI_MODEL", "gpt-4.1")
+        self.openai_client = OpenAI(api_key=self.OPENAI_API_KEY)
+
+    def get_ai_messages(self, user_message):
+        self.messages.append({"role": "user", "content": user_message})
+        response = self.openai_client.chat.completions.create(
+            model=self.OPENAI_MODEL,
+            messages=self.messages,
+            max_tokens=120 * 10,
+            temperature=self.temperature,
+        )
+        self.messages.append(
+            {
+                "role": "assistant",
+                "content": response.choices[0].message.content.strip(),
+            }
+        )
+
+        return response.choices[0].message.content.strip()
+
+    def clear_messages(self):
+        self.messages = [{"role": "system", "content": "あなたは丁寧なメイドです。"}]
+
+
+# ChatBotのテスト
+if __name__ == "__main__":
+    chatbot = ChatBot()
+    print(chatbot.get_ai_messages("こんにちは"))
+    print(chatbot.get_ai_messages("今から私のいう事を英語に翻訳してください"))
+    print(chatbot.get_ai_messages("おやすみなさい"))
+    print(chatbot.get_ai_messages("おはようございます"))
