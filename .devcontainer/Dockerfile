@@ -33,6 +33,7 @@ RUN pip install  --no-cache-dir jinja2
 RUN pip install  --no-cache-dir sqlmodel passlib[bcrypt] itsdangerous
 RUN pip install --no-cache-dir beautifulsoup4
 RUN pip install --no-cache-dir requests
+RUN pip install --no-cache-dir markdown2
 
 COPY . /app
 
