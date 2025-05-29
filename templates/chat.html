@@ -1,0 +1,75 @@
+{% extends "base.html" %}
+
+{% block title %}チャット{% endblock %}
+
+{% block content %}
+<div class="container mx-auto px-4 py-8">
+    <div class="max-w-2xl mx-auto">
+        <h1 class="text-2xl font-bold mb-6">チャット</h1>
+        
+        <div id="chat-messages" class="bg-white rounded-lg shadow p-4 mb-4 h-96 overflow-y-auto">
+            <!-- メッセージはここに表示されます -->
+        </div>
+
+        <form id="chat-form" class="flex gap-2">
+            <input type="text" 
+                   id="message-input" 
+                   class="flex-1 border rounded-lg px-4 py-2 focus:outline-none focus:border-blue-500"
+                   placeholder="メッセージを入力...">
+            <button type="submit" 
+                    class="bg-blue-500 text-white px-6 py-2 rounded-lg hover:bg-blue-600 transition-colors">
+                送信
+            </button>
+        </form>
+    </div>
+</div>
+
+<script>
+document.getElementById('chat-form').addEventListener('submit', async (e) => {
+    e.preventDefault();
+    
+    const input = document.getElementById('message-input');
+    const message = input.value.trim();
+    if (!message) return;
+
+    // ユーザーメッセージを表示
+    const chatMessages = document.getElementById('chat-messages');
+    chatMessages.innerHTML += `
+        <div class="mb-4">
+            <div class="bg-blue-100 rounded-lg p-3 inline-block">
+                ${message}
+            </div>
+        </div>
+    `;
+
+    // メッセージを送信
+    try {
+        const response = await fetch('/chat/send', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({ message }),
+        });
+        const data = await response.json();
+
+        // AIの応答を表示
+        chatMessages.innerHTML += `
+            <div class="mb-4 text-right">
+                <div class="bg-gray-100 rounded-lg p-3 inline-block">
+                    ${data.response}
+                </div>
+            </div>
+        `;
+    } catch (error) {
+        console.error('Error:', error);
+    }
+
+    // 入力フィールドをクリア
+    input.value = '';
+    
+    // 最新のメッセージまでスクロール
+    chatMessages.scrollTop = chatMessages.scrollHeight;
+});
+</script>
+{% endblock %} 
