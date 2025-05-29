@@ -5,7 +5,7 @@ from fastapi.responses import HTMLResponse
 from fastapi.templating import Jinja2Templates
 from pydantic import BaseModel
 
-from utils.utils import ChatBot
+from utils.utils import SYSTEM_PROMPT, ChatBot
 
 router = APIRouter(prefix="/chat", tags=["chat"])
 templates = Jinja2Templates(directory="templates")
@@ -30,10 +30,8 @@ async def send_message(message: Message, request: Request):
     """メッセージを送信してAIの応答を取得"""
     try:
         # セッションからメッセージ履歴を取得
-        messages = request.session.get(
-            "chat_messages",
-            [{"role": "system", "content": "あなたは丁寧なメイドです。"}],
-        )
+        default_messages = [{"role": "system", "content": SYSTEM_PROMPT}]
+        messages = request.session.get("chat_messages", default_messages)
 
         # ChatBotインスタンスを作成
         chatbot = ChatBot(temperature=0.1)
@@ -54,7 +52,5 @@ async def send_message(message: Message, request: Request):
 async def clear_chat(request: Request):
     """チャット履歴をクリア"""
     # メッセージ履歴を初期化
-    request.session["chat_messages"] = [
-        {"role": "system", "content": "あなたは丁寧なメイドです。"}
-    ]
+    request.session["chat_messages"] = [{"role": "system", "content": SYSTEM_PROMPT}]
     return {"status": "success"}
