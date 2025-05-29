@@ -81,6 +81,9 @@ document.getElementById('chat-form').addEventListener('submit', async (e) => {
     const message = input.value.trim();
     if (!message) return;
 
+    // 入力フィールドを即座にクリア
+    input.value = '';
+
     // ユーザーメッセージを表示
     const chatMessages = document.getElementById('chat-messages');
     chatMessages.innerHTML += `
@@ -118,9 +121,6 @@ document.getElementById('chat-form').addEventListener('submit', async (e) => {
     } catch (error) {
         console.error('Error:', error);
     }
-
-    // 入力フィールドをクリア
-    input.value = '';
     
     // 最新のメッセージまでスクロール
     chatMessages.scrollTop = chatMessages.scrollHeight;
