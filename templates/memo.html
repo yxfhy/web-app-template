@@ -68,15 +68,17 @@
                         <div class="d-flex justify-content-start align-items-start">
                             <div class="flex-grow-1 me-3" style="min-width: 0;">
                                 <p class="mb-1 text-start" style="word-wrap: break-word; white-space: pre-wrap; overflow-wrap: break-word;">{{ memo.content | safe }}</p>
-                                {% if '<a href=' in memo.content %}
-                                <button type="button" class="btn btn-outline-secondary btn-sm mt-2 text-white" onclick="copyUrl('{{ memo.content }}')">
-                                    <i class="bi bi-link-45deg"></i> URLをコピー
-                                </button>
-                                {% endif %}
+                                <div class="d-flex gap-2 mt-2">
+                                    {% if '<a href=' in memo.content %}
+                                    <button type="button" class="btn btn-outline-secondary btn-sm text-white" onclick="copyUrl('{{ memo.content }}')">
+                                        <i class="bi bi-link-45deg"></i> URLをコピー
+                                    </button>
+                                    {% endif %}
+                                    <form method="POST" action="/memo/delete/{{ memo.id }}" style="margin: 0;">
+                                        <button type="submit" class="btn btn-danger btn-sm" onclick="return confirm('このメモを削除してもよろしいですか？')">削除</button>
+                                    </form>
+                                </div>
                             </div>
-                            <form method="POST" action="/memo/delete/{{ memo.id }}" style="flex-shrink: 0;">
-                                <button type="submit" class="btn btn-danger btn-sm" onclick="return confirm('このメモを削除してもよろしいですか？')">削除</button>
-                            </form>
                         </div>
                         <small class="text-muted">投稿日時: {{ memo.created_at }}</small>
                     </div>
