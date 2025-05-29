@@ -53,8 +53,8 @@ marked.setOptions({
     gfm: true
 });
 
-// チャット履歴のクリア
-document.getElementById('clear-chat').addEventListener('click', async () => {
+// チャット履歴をクリアする関数
+async function clearChatHistory() {
     try {
         await fetch('/chat/clear', {
             method: 'POST',
@@ -66,7 +66,13 @@ document.getElementById('clear-chat').addEventListener('click', async () => {
     } catch (error) {
         console.error('Error:', error);
     }
-});
+}
+
+// ページ読み込み時にセッションの会話履歴をクリア
+window.addEventListener('load', clearChatHistory);
+
+// チャット履歴のクリアボタンのイベントリスナー
+document.getElementById('clear-chat').addEventListener('click', clearChatHistory);
 
 document.getElementById('chat-form').addEventListener('submit', async (e) => {
     e.preventDefault();
