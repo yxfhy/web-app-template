@@ -74,6 +74,11 @@
                                         <i class="bi bi-link-45deg"></i> URLをコピー
                                     </button>
                                     {% endif %}
+                                    {% if request.session.get("username") == "yxfhy" %}
+                                    <button type="button" class="btn btn-outline-primary btn-sm text-white" onclick="pushToGithub('{{ memo.id }}')">
+                                        <i class="bi bi-github"></i> GitHubにプッシュ
+                                    </button>
+                                    {% endif %}
                                     <form method="POST" action="/memo/delete/{{ memo.id }}" style="margin: 0;">
                                         <button type="submit" class="btn btn-warning btn-sm" style="background-color: #ffc107 !important; color: white !important;" onclick="return confirm('このメモを削除してもよろしいですか？')">削除</button>
                                     </form>
@@ -185,6 +190,11 @@ async function copyUrl(content) {
         console.error('URLのコピーに失敗しました:', err);
         alert('URLのコピーに失敗しました');
     }
+}
+
+async function pushToGithub(memoId) {
+    // TODO: GitHubへのプッシュ機能を実装
+    console.log('GitHubへのプッシュ機能はまだ実装されていません。メモID:', memoId);
 }
 </script>
 {% endblock %} 
