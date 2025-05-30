@@ -1,5 +1,5 @@
 import os
-from typing import Optional
+from typing import Any, Dict, Optional
 
 import requests
 from bs4 import BeautifulSoup
@@ -11,6 +11,44 @@ from openai import OpenAI
 
 SYSTEM_PROMPT = """あなたはシステムとユーザーをつなぐアシスタントです。
 """
+
+# ------------------------------------------------------------------
+# GitHub API ヘルパ
+
+
+def get_github_repo_contents(owner: str, repo: str, path: str = "") -> Dict[str, Any]:
+    """
+    GitHubのリポジトリコンテンツを取得する関数
+
+    Args:
+        owner (str): リポジトリのオーナー名
+        repo (str): リポジトリ名
+        path (str, optional): 取得するパス。デフォルトは空文字（ルート）
+
+    Returns:
+        Dict[str, Any]: リポジトリのコンテンツ情報
+
+    Raises:
+        RuntimeError: 必要な環境変数が設定されていない場合
+        requests.exceptions.RequestException: APIリクエストが失敗した場合
+    """
+    load_dotenv()
+    github_token = os.getenv("GITHUB_TOKEN")
+
+    if not github_token:
+        raise RuntimeError("GITHUB_TOKEN is not set in .env")
+
+    headers = {
+        "Accept": "application/vnd.github+json",
+        "Authorization": f"Bearer {github_token}",
+        "X-GitHub-Api-Version": "2022-11-28",
+    }
+
+    url = f"https://api.github.com/repos/{owner}/{repo}/contents/{path}"
+    response = requests.get(url, headers=headers)
+    response.raise_for_status()
+
+    return response.json()
 
 
 # ------------------------------------------------------------------
@@ -147,8 +185,21 @@ class ChatBot:
 
 # ChatBotのテスト
 if __name__ == "__main__":
-    chatbot = ChatBot()
-    print(chatbot.get_ai_messages("こんにちは"))
-    print(chatbot.get_ai_messages("今から私のいう事を英語に翻訳してください"))
-    print(chatbot.get_ai_messages("おやすみなさい"))
-    print(chatbot.get_ai_messages("おはようございます"))
+    try:
+        # テスト用のリポジトリ情報
+        test_owner = "yxfhy"
+        test_repo = "memo"
+
+        # リポジトリのルートコンテンツを取得
+        contents = get_github_repo_contents(test_owner, test_repo)
+        print("リポジトリのルートコンテンツ:")
+        for item in contents:
+            print(f"- {item['name']} ({item['type']})")
+
+        # READMEファイルの内容を取得
+        readme = get_github_repo_contents(test_owner, test_repo, "README.md")
+        print("\nREADMEの内容:")
+        print(readme.get("content", "コンテンツが見つかりません"))
+
+    except Exception as e:
+        print(f"エラーが発生しました: {str(e)}")
