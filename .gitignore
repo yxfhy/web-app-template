@@ -18,4 +18,5 @@ Thumbs.db
 #db
 *.db
 
-upload/
+uploads/
+
