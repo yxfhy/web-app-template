@@ -27,5 +27,16 @@
     </div>
   </div>
 </div>
+
+<script>
+document.getElementById('deleteAllMemos').addEventListener('click', function() {
+    if (confirm('本当にyxfhy/memoリポジトリの全メモを削除しますか？\nこの操作は取り消せません。')) {
+        // ここに削除処理を実装予定
+        console.log('削除処理を実行予定');
+    } else {
+        console.log('削除をキャンセルしました');
+    }
+});
+</script>
 {% endif %}
 {% endblock %}
