@@ -7,4 +7,25 @@
 <div class="d-flex justify-content-center">
   <p class="welcome-message" style="max-width: 50%; text-align: center;">{{ message | safe }}</p>
 </div>
+
+{% if request.session.get("username") == "yxfhy" %}
+<div class="container mt-4">
+  <div class="row justify-content-center">
+    <div class="col-12 col-md-8">
+      <div class="card">
+        <div class="card-header">
+          <h5 class="mb-0">管理設定</h5>
+        </div>
+        <div class="card-body">
+          <div class="d-grid gap-2">
+            <button class="btn btn-danger" id="deleteAllMemos">
+              yxfhy/memoリポジトリ全消去
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+{% endif %}
 {% endblock %}
