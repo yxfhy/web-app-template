@@ -39,11 +39,12 @@ document.getElementById('deleteAllMemos').addEventListener('click', async functi
                 }
             });
 
+            const result = await response.json();
+
             if (!response.ok) {
-                throw new Error('削除に失敗しました');
+                throw new Error(result.detail || '削除に失敗しました');
             }
 
-            const result = await response.json();
             alert(result.message);
             // 成功したらページをリロード
             window.location.reload();

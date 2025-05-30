@@ -171,7 +171,7 @@ async def push_memo_to_github(
         raise HTTPException(status_code=500, detail=str(e))
 
 
-@router.post("/memo/delete-all", response_class=HTMLResponse)
+@router.post("/memo/delete-all")
 async def delete_all_memos(request: Request):
     """yxfhy/memoリポジトリの全メモを削除する"""
     # セッションからユーザー名を取得
