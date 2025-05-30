@@ -1,4 +1,6 @@
+import base64
 import os
+from datetime import datetime
 from typing import Any, Dict, Optional
 
 import requests
@@ -46,6 +48,58 @@ def get_github_repo_contents(owner: str, repo: str, path: str = "") -> Dict[str,
 
     url = f"https://api.github.com/repos/{owner}/{repo}/contents/{path}"
     response = requests.get(url, headers=headers)
+    response.raise_for_status()
+
+    return response.json()
+
+
+def create_github_file(
+    owner: str, repo: str, content: str, branch: str = "main"
+) -> Dict[str, Any]:
+    """
+    GitHubのリポジトリにファイルを作成する関数
+
+    Args:
+        owner (str): リポジトリのオーナー名
+        repo (str): リポジトリ名
+        content (str): 作成するファイルの内容
+        branch (str, optional): 対象のブランチ。デフォルトは"main"
+
+    Returns:
+        Dict[str, Any]: 作成されたファイルの情報
+
+    Raises:
+        RuntimeError: 必要な環境変数が設定されていない場合
+        requests.exceptions.RequestException: APIリクエストが失敗した場合
+    """
+    load_dotenv()
+    github_token = os.getenv("GITHUB_TOKEN")
+
+    if not github_token:
+        raise RuntimeError("GITHUB_TOKEN is not set in .env")
+
+    headers = {
+        "Accept": "application/vnd.github+json",
+        "Authorization": f"Bearer {github_token}",
+        "X-GitHub-Api-Version": "2022-11-28",
+    }
+
+    # 現在のタイムスタンプをファイル名として使用
+    timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+    path = f"memo_{timestamp}.md"
+
+    # コンテンツをBase64エンコード
+    content_bytes = content.encode("utf-8")
+    content_base64 = base64.b64encode(content_bytes).decode("utf-8")
+
+    data = {
+        "message": f"Add memo file: {path}",
+        "content": content_base64,
+        "branch": branch,
+    }
+
+    url = f"https://api.github.com/repos/{owner}/{repo}/contents/{path}"
+    response = requests.put(url, headers=headers, json=data)
     response.raise_for_status()
 
     return response.json()
@@ -200,6 +254,22 @@ if __name__ == "__main__":
         readme = get_github_repo_contents(test_owner, test_repo, "README.md")
         print("\nREADMEの内容:")
         print(readme.get("content", "コンテンツが見つかりません"))
+
+        # 新しいメモファイルを作成
+        test_content = """# テストメモ
+
+これはテスト用のメモファイルです。
+- 項目1
+- 項目2
+- 項目3
+
+作成日時: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}
+"""
+        new_file = create_github_file(test_owner, test_repo, test_content)
+        print("\n新しいファイルを作成しました:")
+        print(f"ファイル名: {new_file['content']['name']}")
+        print(f"パス: {new_file['content']['path']}")
+        print(f"SHA: {new_file['content']['sha']}")
 
     except Exception as e:
         print(f"エラーが発生しました: {str(e)}")
