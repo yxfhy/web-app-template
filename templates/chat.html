@@ -97,6 +97,18 @@ document.getElementById('chat-form').addEventListener('submit', async (e) => {
 
     // メッセージを送信
     try {
+        // ローディングインジケーターを表示
+        chatMessages.innerHTML += `
+            <div class="mb-4 text-right" id="thinking-indicator">
+                <div class="bg-gray-100 rounded-lg p-3 inline-block">
+                    <div class="flex items-center gap-2">
+                        <div class="animate-pulse">応答を生成中</div>
+                        <div class="w-2 h-2 bg-gray-400 rounded-full animate-pulse"></div>
+                    </div>
+                </div>
+            </div>
+        `;
+
         const response = await fetch('/chat/send', {
             method: 'POST',
             headers: {
@@ -105,6 +117,9 @@ document.getElementById('chat-form').addEventListener('submit', async (e) => {
             body: JSON.stringify({ message }),
         });
         const data = await response.json();
+
+        // ローディングインジケーターを削除
+        document.getElementById('thinking-indicator').remove();
 
         // AIの応答を表示（マークダウンを処理）
         chatMessages.innerHTML += `
