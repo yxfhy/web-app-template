@@ -23,15 +23,7 @@ def convert_urls_to_links(text: str) -> str:
     def replace_url(match):
         url = match.group(0)
         title = get_url_title(url)
-
-        # URLが長すぎる場合は省略
-        max_url_length = 50
-        if len(url) > max_url_length:
-            url_display = url[:max_url_length] + "..."
-        else:
-            url_display = url
-
-        display_text = f"{title} ({url_display})" if title else url_display
+        display_text = f"{title} ({url})" if title else url
         return (
             f'<a href="{url}" target="_blank" '
             f'rel="noopener noreferrer">{display_text}</a>'
