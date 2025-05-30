@@ -30,7 +30,7 @@
 
 <script>
 document.getElementById('deleteAllMemos').addEventListener('click', async function() {
-    if (confirm('本当にyxfhy/memoリポジトリの全メモを削除しますか？\nこの操作は取り消せません。')) {
+    if (confirm('yxfhy/memoリポジトリの「memo_」で始まるファイルを全て削除しますか？\nこの操作は取り消せません。')) {
         try {
             const response = await fetch('/memo/delete-all', {
                 method: 'POST',
