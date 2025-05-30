@@ -93,7 +93,7 @@ def generate_ai_reply(user_prompt: str, temperature: float) -> str:
                 "content": user_prompt,
             },
         ],
-        max_tokens=120 * 10,
+        max_tokens=32000,
         temperature=temperature,
     )
     return response.choices[0].message.content.strip()
@@ -129,7 +129,7 @@ class ChatBot:
         response = self.openai_client.chat.completions.create(
             model=self.OPENAI_MODEL,
             messages=self.messages,
-            max_tokens=120 * 10,
+            max_tokens=32000,
             temperature=self.temperature,
         )
         self.messages.append(
