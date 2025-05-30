@@ -84,8 +84,8 @@ def create_github_file(
         "X-GitHub-Api-Version": "2022-11-28",
     }
 
-    # 現在のタイムスタンプをファイル名として使用
-    timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+    # 現在のタイムスタンプをファイル名として使用（YYYY_MM_DD_HH_MM_SS形式）
+    timestamp = datetime.now().strftime("%Y_%m_%d_%H_%M_%S")
     path = f"memo_{timestamp}.md"
 
     # コンテンツをBase64エンコード
