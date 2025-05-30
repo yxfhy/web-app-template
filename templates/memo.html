@@ -193,8 +193,34 @@ async function copyUrl(content) {
 }
 
 async function pushToGithub(memoId) {
-    // TODO: GitHubへのプッシュ機能を実装
-    console.log('GitHubへのプッシュ機能はまだ実装されていません。メモID:', memoId);
+    try {
+        const response = await fetch(`/memo/push/${memoId}`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            }
+        });
+
+        if (!response.ok) {
+            throw new Error('GitHubへのプッシュに失敗しました');
+        }
+
+        const result = await response.json();
+        
+        // 成功メッセージを表示
+        const toast = new bootstrap.Toast(document.getElementById('copyToast'), {
+            delay: 3000
+        });
+        document.querySelector('.toast-body').textContent = 
+            'GitHubにプッシュしました。新しいタブで開きます。';
+        toast.show();
+
+        // 新しいタブでGitHubのファイルを開く
+        window.open(result.url, '_blank');
+    } catch (error) {
+        console.error('Error:', error);
+        alert('GitHubへのプッシュに失敗しました: ' + error.message);
+    }
 }
 </script>
 {% endblock %} 

@@ -9,8 +9,8 @@ from fastapi.templating import Jinja2Templates
 from pydantic import BaseModel
 from sqlalchemy.orm import Session
 
-from models.memo import create_memo, delete_memo, get_db, get_user_memos
-from utils.utils import get_url_title
+from models.memo import MemoModel, create_memo, delete_memo, get_db, get_user_memos
+from utils.utils import create_github_file, get_url_title
 
 router = APIRouter()
 templates = Jinja2Templates(directory="templates")
@@ -143,3 +143,32 @@ async def delete_memo_route(
         )
 
     return RedirectResponse(url="/memo", status_code=303)
+
+
+@router.post("/memo/push/{memo_id}")
+async def push_memo_to_github(
+    request: Request, memo_id: str, db: Session = Depends(get_db)
+):
+    username = request.session.get("username")
+    if not username:
+        raise HTTPException(status_code=401, detail="ログインが必要です")
+
+    # メモを取得
+    memo = db.query(MemoModel).filter(MemoModel.id == memo_id).first()
+    if not memo:
+        raise HTTPException(status_code=404, detail="メモが見つかりません")
+
+    # メモの内容をマークダウン形式に変換
+    content = memo.content
+    # HTMLタグを削除してプレーンテキストに変換
+    content = re.sub(r"<[^>]+>", "", content)
+    # 作成日時を追加
+    created_at = memo.created_at.strftime("%Y-%m-%d %H:%M:%S")
+    content = f"# メモ\n\n{content}\n\n作成日時: {created_at}"
+
+    try:
+        # GitHubにプッシュ
+        result = create_github_file("yxfhy", "memo", content)
+        return {"status": "success", "url": result["content"]["html_url"]}
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
