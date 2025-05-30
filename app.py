@@ -23,7 +23,7 @@ from fastapi.templating import Jinja2Templates
 from starlette.middleware.sessions import SessionMiddleware
 
 from database import create_db_and_tables
-from routers import auth, chat, memo
+from routers import auth, chat, file_drop, memo
 from utils.utils import generate_ai_reply, initialize_clients
 
 BASE_DIR = Path(__file__).resolve().parent
@@ -67,6 +67,7 @@ app.mount("/static", StaticFiles(directory=BASE_DIR / "static"), name="static")
 app.include_router(auth.router)
 app.include_router(memo.router)
 app.include_router(chat.router)
+app.include_router(file_drop.router)
 
 
 @app.get("/", response_class=HTMLResponse)
