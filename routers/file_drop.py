@@ -1,6 +1,7 @@
 """ファイルアップロード・ダウンロード機能"""
 
 import os
+import time
 import uuid
 from datetime import datetime
 from pathlib import Path
@@ -26,6 +27,30 @@ UPLOAD_DIR.mkdir(exist_ok=True)
 # 静的ファイルのマウント
 router.mount("/files", StaticFiles(directory=str(UPLOAD_DIR.absolute())), name="files")
 
+# ファイル数の制限
+# 注: この制限は以下の理由で設定されています：
+# 1. ファイルサイズの計算処理の負荷を抑えるため
+#    - 各ファイルのサイズはページ表示時に計算される
+#    - ファイル数が増えると、その分だけファイルシステムへのアクセスが増加
+#    - 100ファイル程度であれば、処理時間は0.5秒程度で収まる見込み
+# 2. ユーザー体験の維持
+#    - ファイル数が多すぎると、ページの読み込みが遅くなる
+#    - 100ファイル程度であれば、快適な操作が可能
+MAX_FILES_PER_USER = 100
+
+
+def get_file_size(file_path: Path) -> str:
+    """ファイルサイズを取得して人間が読みやすい形式で返す"""
+    try:
+        size_bytes = file_path.stat().st_size
+        for unit in ["B", "KB", "MB", "GB", "TB"]:
+            if size_bytes < 1024.0:
+                return f"{size_bytes:.2f} {unit}"
+            size_bytes /= 1024.0
+        return f"{size_bytes:.2f} TB"
+    except Exception:
+        return "不明"
+
 
 @router.get("/", response_class=HTMLResponse)
 async def file_drop_page(request: Request, db: Session = Depends(get_session)):
@@ -37,11 +62,24 @@ async def file_drop_page(request: Request, db: Session = Depends(get_session)):
     username = request.session.get("username")
     files = get_user_files(db, username)
 
+    # 各ファイルのサイズを取得（処理時間を計測）
+    start_time = time.time()
+    files_with_size = []
+    for file in files:
+        file_path = UPLOAD_DIR / file.stored_filename
+        file_size = get_file_size(file_path)
+        files_with_size.append({"file": file, "size": file_size})
+    end_time = time.time()
+    processing_time = end_time - start_time
+
     return templates.TemplateResponse(
         "file_drop.html",
         {
             "request": request,
-            "files": files,
+            "files": files_with_size,
+            "processing_time": f"{processing_time:.3f}秒",
+            "max_files": MAX_FILES_PER_USER,
+            "current_files": len(files),
         },
     )
 
@@ -85,6 +123,15 @@ async def upload_file(
     login_required_yxfhy(request)
 
     username = request.session.get("username")
+
+    # ファイル数の制限チェック
+    current_files = len(get_user_files(db, username))
+    if current_files >= MAX_FILES_PER_USER:
+        raise HTTPException(
+            status_code=400,
+            detail=f"ファイル数の上限（{MAX_FILES_PER_USER}個）に達しました。"
+            "新しいファイルをアップロードするには、既存のファイルを削除してください。",
+        )
 
     # ファイル名を安全に生成
     original_filename = file.filename

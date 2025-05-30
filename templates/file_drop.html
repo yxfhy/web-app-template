@@ -18,6 +18,9 @@
                         </div>
                         <button type="submit" class="btn btn-primary">アップロード</button>
                     </form>
+                    <small class="text-muted d-block mt-2">
+                        ファイル数: {{ current_files }}/{{ max_files }}個
+                    </small>
                 </div>
             </div>
 
@@ -29,18 +32,20 @@
                 <div class="card-body">
                     {% if files %}
                         <div class="list-group">
-                            {% for file in files %}
+                            {% for file_info in files %}
                                 <div class="list-group-item d-flex justify-content-between align-items-center">
                                     <div>
-                                        <a href="/file-drop/download/{{ file.id }}" 
+                                        <a href="/file-drop/download/{{ file_info.file.id }}" 
                                            class="text-decoration-none">
-                                            {{ file.original_filename }}
+                                            {{ file_info.file.original_filename }}
                                         </a>
                                         <small class="text-muted d-block">
-                                            アップロード日時: {{ file.created_at.strftime('%Y-%m-%d %H:%M:%S') }}
+                                            アップロード日時: {{ file_info.file.created_at.strftime('%Y-%m-%d %H:%M:%S') }}
+                                            <br>
+                                            ファイルサイズ: {{ file_info.size }}
                                         </small>
                                     </div>
-                                    <form action="/file-drop/delete/{{ file.id }}" method="post" class="d-inline">
+                                    <form action="/file-drop/delete/{{ file_info.file.id }}" method="post" class="d-inline">
                                         <button type="submit" 
                                                 class="btn btn-danger btn-sm"
                                                 onclick="return confirm('このファイルを削除してもよろしいですか？')">
@@ -50,6 +55,9 @@
                                 </div>
                             {% endfor %}
                         </div>
+                        <small class="text-muted d-block mt-2">
+                            ファイルサイズ計算時間: {{ processing_time }}
+                        </small>
                     {% else %}
                         <p class="text-muted text-center mb-0">アップロードされたファイルはありません</p>
                     {% endif %}
