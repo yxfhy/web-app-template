@@ -67,7 +67,9 @@
                     <div class="border-bottom mb-3 pb-3">
                         <div class="d-flex justify-content-start align-items-start">
                             <div class="flex-grow-1 me-3" style="min-width: 0;">
-                                <p class="mb-1 text-start" style="word-wrap: break-word; white-space: pre-wrap; overflow-wrap: break-word;">{{ memo.content | safe }}</p>
+                                <div class="memo-content" style="max-height: 150px; overflow-y: auto; word-wrap: break-word; white-space: pre-wrap; overflow-wrap: break-word;">
+                                    <p class="mb-1 text-start">{{ memo.content | safe }}</p>
+                                </div>
                                 <div class="d-flex gap-2 mt-2">
                                     {% if '<a href=' in memo.content %}
                                     <button type="button" class="btn btn-outline-secondary btn-sm text-white" onclick="copyUrl('{{ memo.content }}')">
