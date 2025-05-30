@@ -29,12 +29,28 @@
 </div>
 
 <script>
-document.getElementById('deleteAllMemos').addEventListener('click', function() {
+document.getElementById('deleteAllMemos').addEventListener('click', async function() {
     if (confirm('本当にyxfhy/memoリポジトリの全メモを削除しますか？\nこの操作は取り消せません。')) {
-        // ここに削除処理を実装予定
-        console.log('削除処理を実行予定');
-    } else {
-        console.log('削除をキャンセルしました');
+        try {
+            const response = await fetch('/memo/delete-all', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                }
+            });
+
+            if (!response.ok) {
+                throw new Error('削除に失敗しました');
+            }
+
+            const result = await response.json();
+            alert(result.message);
+            // 成功したらページをリロード
+            window.location.reload();
+        } catch (error) {
+            console.error('Error:', error);
+            alert('削除に失敗しました: ' + error.message);
+        }
     }
 });
 </script>

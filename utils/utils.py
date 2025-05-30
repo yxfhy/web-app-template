@@ -105,6 +105,51 @@ def create_github_file(
     return response.json()
 
 
+def delete_github_file(
+    owner: str, repo: str, path: str, sha: str, branch: str = "main"
+) -> Dict[str, Any]:
+    """
+    GitHubのリポジトリからファイルを削除する関数
+
+    Args:
+        owner (str): リポジトリのオーナー名
+        repo (str): リポジトリ名
+        path (str): 削除するファイルのパス
+        sha (str): ファイルのSHAハッシュ
+        branch (str, optional): 対象のブランチ。デフォルトは"main"
+
+    Returns:
+        Dict[str, Any]: 削除結果の情報
+
+    Raises:
+        RuntimeError: 必要な環境変数が設定されていない場合
+        requests.exceptions.RequestException: APIリクエストが失敗した場合
+    """
+    load_dotenv()
+    github_token = os.getenv("GITHUB_TOKEN")
+
+    if not github_token:
+        raise RuntimeError("GITHUB_TOKEN is not set in .env")
+
+    headers = {
+        "Accept": "application/vnd.github+json",
+        "Authorization": f"Bearer {github_token}",
+        "X-GitHub-Api-Version": "2022-11-28",
+    }
+
+    data = {
+        "message": f"Delete file: {path}",
+        "sha": sha,
+        "branch": branch,
+    }
+
+    url = f"https://api.github.com/repos/{owner}/{repo}/contents/{path}"
+    response = requests.delete(url, headers=headers, json=data)
+    response.raise_for_status()
+
+    return response.json()
+
+
 # ------------------------------------------------------------------
 # 初期化関数
 def initialize_clients():

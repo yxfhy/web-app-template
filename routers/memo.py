@@ -10,7 +10,12 @@ from pydantic import BaseModel
 from sqlalchemy.orm import Session
 
 from models.memo import MemoModel, create_memo, delete_memo, get_db, get_user_memos
-from utils.utils import create_github_file, get_url_title
+from utils.utils import (
+    create_github_file,
+    delete_github_file,
+    get_github_repo_contents,
+    get_url_title,
+)
 
 router = APIRouter()
 templates = Jinja2Templates(directory="templates")
@@ -162,5 +167,29 @@ async def push_memo_to_github(
         # GitHubにプッシュ
         result = create_github_file("yxfhy", "memo", content)
         return {"status": "success", "url": result["content"]["html_url"]}
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@router.post("/memo/delete-all", response_class=HTMLResponse)
+async def delete_all_memos(request: Request):
+    """yxfhy/memoリポジトリの全メモを削除する"""
+    # セッションからユーザー名を取得
+    username = request.session.get("username")
+    if not username or username != "yxfhy":
+        raise HTTPException(status_code=403, detail="権限がありません")
+
+    try:
+        # リポジトリの全ファイルを取得
+        contents = get_github_repo_contents("yxfhy", "memo")
+
+        # 各ファイルを削除
+        for item in contents:
+            if item["type"] == "file" and item["name"].startswith("memo_"):
+                delete_github_file(
+                    owner="yxfhy", repo="memo", path=item["path"], sha=item["sha"]
+                )
+
+        return {"status": "success", "message": "全メモを削除しました"}
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
