@@ -83,6 +83,7 @@ document.getElementById('chat-form').addEventListener('submit', async (e) => {
 
     // AIの応答を表示するための要素を作成
     const aiResponseDiv = document.createElement('div');
+    // aiResponseDiv.className = 'mb-4 text-right';
     aiResponseDiv.className = 'mb-4 text-right';
     aiResponseDiv.innerHTML = `
         <div class="bg-gray-100 rounded-lg p-3 inline-block">
@@ -120,6 +121,7 @@ document.getElementById('chat-form').addEventListener('submit', async (e) => {
                     const jsonData = JSON.parse(line.slice(6));
                     markdownBuffer += jsonData.chunk;
                     const htmlContent = marked.parse(markdownBuffer);
+                    // const htmlContent = markdownBuffer;
                     aiResponseElement.innerHTML = htmlContent;
                 }
             }

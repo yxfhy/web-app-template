@@ -24,12 +24,12 @@ main {
   border-radius: 0.5rem;
   box-shadow: 0 2px 6px rgba(0, 0, 0, 0.05);
 }
-
+/* 
 h2 {
   margin-top: 0;
   font-size: 1.5rem;
   text-align: center;
-}
+} */
 
 form {
   display: flex;
@@ -72,9 +72,9 @@ button:enabled {
   cursor: pointer;
   background-color: #3182ce; /* 有効時はブルー */
 }
-
+/* 
 p {
   font-size: 0.875rem;
   color: #718096;
   text-align: center;
-}
+} */
