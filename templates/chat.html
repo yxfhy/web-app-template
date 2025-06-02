@@ -117,6 +117,27 @@ document.getElementById('chat-form').addEventListener('submit', async (e) => {
         }
     });
 
+    // GitHubプッシュボタンのイベントリスナーを追加
+    const githubPushButton = aiResponseDiv.querySelector('.github-push-button');
+    githubPushButton.addEventListener('click', async () => {
+        try {
+            console.log('Sending markdownBuffer:', aiResponseElement.markdownBuffer);
+            const response = await fetch('/chat/push', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    markdownBuffer: aiResponseElement.markdownBuffer
+                })
+            });
+            const result = await response.json();
+            console.log('Response:', result);
+        } catch (error) {
+            console.error('Error:', error);
+        }
+    });
+
     try {
         // ストリーミングレスポンスを処理
         const response = await fetch('/chat/send/stream', {

@@ -17,6 +17,10 @@ class Message(BaseModel):
     message: str
 
 
+class PushData(BaseModel):
+    markdownBuffer: str
+
+
 @router.get("/", response_class=HTMLResponse)
 async def chat_page(request: Request):
     """チャットページを表示"""
@@ -84,4 +88,11 @@ async def clear_chat(request: Request):
     """チャット履歴をクリア"""
     # メッセージ履歴を初期化
     request.session["chat_messages"] = [{"role": "system", "content": SYSTEM_PROMPT}]
+    return {"status": "success"}
+
+
+@router.post("/push")
+async def push_to_github(request: Request, data: PushData):
+    print("Received data:", data)
+    print("markdownBuffer:", data.markdownBuffer)
     return {"status": "success"}
