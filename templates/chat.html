@@ -115,16 +115,16 @@ document.getElementById('chat-form').addEventListener('submit', async (e) => {
 
             for (const line of lines) {
                 if (line.startsWith('data: ')) {
-                    const content = line.slice(6);
-                    aiResponseElement.innerHTML += content;
+                    const jsonData = JSON.parse(line.slice(6));
+                    aiResponseElement.innerHTML += jsonData.chunk.replace(/\n/g, '<br>');
                 }
             }
         }
 
         // 残りのバッファを処理
         if (buffer.startsWith('data: ')) {
-            const content = buffer.slice(6);
-            aiResponseElement.innerHTML += content;
+            const jsonData = JSON.parse(buffer.slice(6));
+            aiResponseElement.innerHTML += jsonData.chunk.replace(/\n/g, '<br>');
         }
     } catch (error) {
         console.error('Error:', error);

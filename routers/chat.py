@@ -1,5 +1,7 @@
 """チャットルーター"""
 
+import json
+
 from fastapi import APIRouter, Request
 from fastapi.responses import HTMLResponse, StreamingResponse
 from fastapi.templating import Jinja2Templates
@@ -63,8 +65,8 @@ async def send_message_stream(message: Message, request: Request):
         async def generate():
             try:
                 async for chunk in chatbot.get_ai_messages_stream(message.message):
-                    print(f"data: {chunk}\n\n")
-                    yield f"data: {chunk}\n\n"
+                    data = {"chunk": chunk}
+                    yield f"data: {json.dumps(data)}\n\n"
             finally:
                 # 更新されたメッセージ履歴をセッションに保存
                 request.session["chat_messages"] = chatbot.messages
