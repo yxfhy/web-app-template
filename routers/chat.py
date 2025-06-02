@@ -63,6 +63,7 @@ async def send_message_stream(message: Message, request: Request):
         async def generate():
             try:
                 async for chunk in chatbot.get_ai_messages_stream(message.message):
+                    print(f"data: {chunk}\n\n")
                     yield f"data: {chunk}\n\n"
             finally:
                 # 更新されたメッセージ履歴をセッションに保存
