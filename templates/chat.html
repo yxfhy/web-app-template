@@ -95,16 +95,19 @@ document.getElementById('chat-form').addEventListener('submit', async (e) => {
         </div>
     `;
 
+    // 一意のIDを生成
+    const responseId = 'ai-response-' + Date.now();
+
     // AIの応答を表示するための要素を作成
     const aiResponseDiv = document.createElement('div');
     aiResponseDiv.className = 'mb-4 text-right';
     aiResponseDiv.innerHTML = `
         <div class="bg-gray-100 rounded-lg p-3 inline-block markdown-content">
-            <div id="ai-response"></div>
+            <div id="${responseId}"></div>
         </div>
     `;
     chatMessages.appendChild(aiResponseDiv);
-    const aiResponseElement = document.getElementById('ai-response');
+    const aiResponseElement = document.getElementById(responseId);
 
     try {
         // ストリーミングレスポンスを処理
