@@ -12,7 +12,6 @@ from __future__ import annotations
 import asyncio
 import os
 import re
-from contextlib import asynccontextmanager
 from datetime import datetime, timedelta, timezone
 from pathlib import Path
 
@@ -23,10 +22,11 @@ from fastapi.templating import Jinja2Templates
 from starlette.middleware.sessions import SessionMiddleware
 
 from database import create_db_and_tables
-from routers import auth, chat, file_drop, memo
+from routers import auth, chat, memo
 from utils.utils import generate_ai_reply, initialize_clients
 
-BASE_DIR = Path(__file__).resolve().parent
+BASE_DIR = Path(__file__).resolve()
+BASE_DIR = BASE_DIR.parent
 
 api_keys_and_clients = initialize_clients()
 # API キーやクライアントの初期化
@@ -67,7 +67,6 @@ app.mount("/static", StaticFiles(directory=BASE_DIR / "static"), name="static")
 app.include_router(auth.router)
 app.include_router(memo.router)
 app.include_router(chat.router)
-app.include_router(file_drop.router)
 
 
 @app.get("/", response_class=HTMLResponse)
@@ -93,7 +92,10 @@ async def read_root(request: Request):
 
     return templates.TemplateResponse(
         "index.html",
-        {"request": request, "message": ai_message},
+        {
+            "request": request,
+            "message": ai_message,
+        },
     )
 
 
