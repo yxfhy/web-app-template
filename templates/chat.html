@@ -35,6 +35,7 @@
     </div>
 </div>
 
+<script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
 <script>
 // チャット履歴をクリアする関数
 async function clearChatHistory() {
@@ -104,6 +105,7 @@ document.getElementById('chat-form').addEventListener('submit', async (e) => {
         const reader = response.body.getReader();
         const decoder = new TextDecoder();
         let buffer = '';
+        let markdownBuffer = '';
 
         while (true) {
             const { value, done } = await reader.read();
@@ -116,7 +118,9 @@ document.getElementById('chat-form').addEventListener('submit', async (e) => {
             for (const line of lines) {
                 if (line.startsWith('data: ')) {
                     const jsonData = JSON.parse(line.slice(6));
-                    aiResponseElement.innerHTML += jsonData.chunk.replace(/\n/g, '<br>');
+                    markdownBuffer += jsonData.chunk;
+                    const htmlContent = marked.parse(markdownBuffer);
+                    aiResponseElement.innerHTML = htmlContent;
                 }
             }
         }
@@ -124,7 +128,9 @@ document.getElementById('chat-form').addEventListener('submit', async (e) => {
         // 残りのバッファを処理
         if (buffer.startsWith('data: ')) {
             const jsonData = JSON.parse(buffer.slice(6));
-            aiResponseElement.innerHTML += jsonData.chunk.replace(/\n/g, '<br>');
+            markdownBuffer += jsonData.chunk;
+            const htmlContent = marked.parse(markdownBuffer);
+            aiResponseElement.innerHTML = htmlContent;
         }
     } catch (error) {
         console.error('Error:', error);
