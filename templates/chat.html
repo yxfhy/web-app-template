@@ -98,8 +98,18 @@ document.getElementById('chat-form').addEventListener('submit', async (e) => {
 
     // コピーボタンのイベントリスナーを追加
     const copyButton = aiResponseDiv.querySelector('.copy-button');
-    copyButton.addEventListener('click', () => {
-        console.log('Markdown Buffer:', aiResponseElement.markdownBuffer);
+    copyButton.addEventListener('click', async () => {
+        try {
+            await navigator.clipboard.writeText(aiResponseElement.markdownBuffer);
+            // コピー成功時のフィードバック
+            const originalText = copyButton.textContent;
+            copyButton.textContent = 'コピー完了！';
+            setTimeout(() => {
+                copyButton.textContent = originalText;
+            }, 2000);
+        } catch (err) {
+            console.error('クリップボードへのコピーに失敗しました:', err);
+        }
     });
 
     try {
