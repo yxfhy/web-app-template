@@ -95,47 +95,73 @@ document.getElementById('chat-form').addEventListener('submit', async (e) => {
         </div>
     `;
 
-    // メッセージを送信
-    try {
-        // ローディングインジケーターを表示
-        chatMessages.innerHTML += `
-            <div class="mb-4 text-right" id="thinking-indicator">
-                <div class="bg-gray-100 rounded-lg p-3 inline-block">
-                    <div class="flex items-center gap-2">
-                        <div class="animate-pulse">応答を生成中</div>
-                        <div class="w-2 h-2 bg-gray-400 rounded-full animate-pulse"></div>
-                    </div>
-                </div>
-            </div>
-        `;
+    // AIの応答を表示するための要素を作成
+    const aiResponseDiv = document.createElement('div');
+    aiResponseDiv.className = 'mb-4 text-right';
+    aiResponseDiv.innerHTML = `
+        <div class="bg-gray-100 rounded-lg p-3 inline-block markdown-content">
+            <div id="ai-response"></div>
+        </div>
+    `;
+    chatMessages.appendChild(aiResponseDiv);
+    const aiResponseElement = document.getElementById('ai-response');
 
-        const response = await fetch('/chat/send', {
+    try {
+        // ストリーミングレスポンスを処理
+        const response = await fetch('/chat/send/stream', {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
             },
             body: JSON.stringify({ message }),
         });
-        const data = await response.json();
 
-        // ローディングインジケーターを削除
-        document.getElementById('thinking-indicator').remove();
+        const reader = response.body.getReader();
+        const decoder = new TextDecoder();
+        let buffer = '';
 
-        // AIの応答を表示（マークダウンを処理）
-        chatMessages.innerHTML += `
-            <div class="mb-4 text-right">
-                <div class="bg-gray-100 rounded-lg p-3 inline-block markdown-content">
-                    ${marked.parse(data.response)}
-                </div>
-            </div>
-        `;
+        while (true) {
+            const { value, done } = await reader.read();
+            if (done) break;
 
-        // コードブロックのシンタックスハイライトを適用
-        document.querySelectorAll('pre code').forEach((block) => {
-            hljs.highlightBlock(block);
-        });
+            buffer += decoder.decode(value, { stream: true });
+            const lines = buffer.split('\n');
+            buffer = lines.pop() || '';
+
+            for (const line of lines) {
+                if (line.startsWith('data: ')) {
+                    const content = line.slice(6);
+                    aiResponseElement.innerHTML += content;
+                    
+                    // マークダウンの処理
+                    const markdownContent = marked.parse(aiResponseElement.innerHTML);
+                    aiResponseElement.innerHTML = markdownContent;
+                    
+                    // コードブロックのシンタックスハイライトを適用
+                    document.querySelectorAll('pre code').forEach((block) => {
+                        hljs.highlightBlock(block);
+                    });
+                }
+            }
+        }
+
+        // 残りのバッファを処理
+        if (buffer.startsWith('data: ')) {
+            const content = buffer.slice(6);
+            aiResponseElement.innerHTML += content;
+            
+            // マークダウンの処理
+            const markdownContent = marked.parse(aiResponseElement.innerHTML);
+            aiResponseElement.innerHTML = markdownContent;
+            
+            // コードブロックのシンタックスハイライトを適用
+            document.querySelectorAll('pre code').forEach((block) => {
+                hljs.highlightBlock(block);
+            });
+        }
     } catch (error) {
         console.error('Error:', error);
+        aiResponseElement.innerHTML = 'エラーが発生しました。';
     }
     
     // 最新のメッセージまでスクロール

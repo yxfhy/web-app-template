@@ -269,17 +269,44 @@ class ChatBot:
             max_tokens=32000,
             temperature=self.temperature,
         )
+        ai_response = response.choices[0].message.content.strip()
         self.messages.append(
             {
                 "role": "assistant",
-                "content": response.choices[0].message.content.strip(),
+                "content": ai_response,
+            }
+        )
+        return ai_response
+
+    async def get_ai_messages_stream(self, user_message):
+        """ストリーミング形式でAIの応答を取得（非同期版）"""
+        self.messages.append({"role": "user", "content": user_message})
+        stream = self.openai_client.chat.completions.create(
+            model=self.OPENAI_MODEL,
+            messages=self.messages,
+            max_tokens=32000,
+            temperature=self.temperature,
+            stream=True,
+        )
+
+        collected_messages = []
+        for chunk in stream:
+            if chunk.choices[0].delta.content is not None:
+                content = chunk.choices[0].delta.content
+                collected_messages.append(content)
+                yield content
+
+        # 完全な応答をメッセージ履歴に追加
+        full_response = "".join(collected_messages)
+        self.messages.append(
+            {
+                "role": "assistant",
+                "content": full_response,
             }
         )
 
-        return response.choices[0].message.content.strip()
-
     def clear_messages(self):
-        self.messages = [{"role": "system", "content": "あなたは丁寧なメイドです。"}]
+        self.messages = [{"role": "system", "content": SYSTEM_PROMPT}]
 
 
 # ChatBotのテスト

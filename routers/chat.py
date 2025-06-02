@@ -1,7 +1,7 @@
 """チャットルーター"""
 
 from fastapi import APIRouter, Request
-from fastapi.responses import HTMLResponse
+from fastapi.responses import HTMLResponse, StreamingResponse
 from fastapi.templating import Jinja2Templates
 from pydantic import BaseModel
 
@@ -46,6 +46,34 @@ async def send_message(message: Message, request: Request):
         return {"response": response}
     except Exception as e:
         return {"response": f"エラーが発生しました: {str(e)}"}
+
+
+@router.post("/send/stream")
+async def send_message_stream(message: Message, request: Request):
+    """メッセージを送信してAIの応答をストリーミング形式で取得"""
+    try:
+        # セッションからメッセージ履歴を取得
+        default_messages = [{"role": "system", "content": SYSTEM_PROMPT}]
+        messages = request.session.get("chat_messages", default_messages)
+
+        # ChatBotインスタンスを作成
+        chatbot = ChatBot(temperature=0.1)
+        chatbot.messages = messages
+
+        async def generate():
+            try:
+                async for chunk in chatbot.get_ai_messages_stream(message.message):
+                    yield f"data: {chunk}\n\n"
+            finally:
+                # 更新されたメッセージ履歴をセッションに保存
+                request.session["chat_messages"] = chatbot.messages
+
+        return StreamingResponse(generate(), media_type="text/event-stream")
+    except Exception as e:
+        return StreamingResponse(
+            iter([f"data: エラーが発生しました: {str(e)}\n\n"]),
+            media_type="text/event-stream",
+        )
 
 
 @router.post("/clear")
