@@ -90,6 +90,11 @@ document.getElementById('chat-form').addEventListener('submit', async (e) => {
             <button class="copy-button bg-gray-200 text-gray-700 px-2 py-1 rounded text-sm ml-2 hover:bg-gray-300 transition-colors">
                 コピー
             </button>
+            {% if request.session.get("username") == "yxfhy" %}
+            <button class="github-push-button bg-gray-200 text-gray-700 px-2 py-1 rounded text-sm ml-2 hover:bg-gray-300 transition-colors">
+                GitHubにプッシュ
+            </button>
+            {% endif %}
         </div>
     `;
     chatMessages.appendChild(aiResponseDiv);
