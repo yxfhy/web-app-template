@@ -298,6 +298,8 @@ class ChatBot:
 
         # 完全な応答をメッセージ履歴に追加
         full_response = "".join(collected_messages)
+
+        print(full_response)
         self.messages.append(
             {
                 "role": "assistant",
