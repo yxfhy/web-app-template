@@ -83,7 +83,6 @@ document.getElementById('chat-form').addEventListener('submit', async (e) => {
 
     // AIの応答を表示するための要素を作成
     const aiResponseDiv = document.createElement('div');
-    // aiResponseDiv.className = 'mb-4 text-right';
     aiResponseDiv.className = 'mb-4 text-right';
     aiResponseDiv.innerHTML = `
         <div class="bg-gray-100 rounded-lg p-3 inline-block">
@@ -95,6 +94,13 @@ document.getElementById('chat-form').addEventListener('submit', async (e) => {
     `;
     chatMessages.appendChild(aiResponseDiv);
     const aiResponseElement = document.getElementById(responseId);
+    aiResponseElement.markdownBuffer = '';
+
+    // コピーボタンのイベントリスナーを追加
+    const copyButton = aiResponseDiv.querySelector('.copy-button');
+    copyButton.addEventListener('click', () => {
+        console.log('Markdown Buffer:', aiResponseElement.markdownBuffer);
+    });
 
     try {
         // ストリーミングレスポンスを処理
@@ -109,7 +115,6 @@ document.getElementById('chat-form').addEventListener('submit', async (e) => {
         const reader = response.body.getReader();
         const decoder = new TextDecoder();
         let buffer = '';
-        let markdownBuffer = '';
 
         while (true) {
             const { value, done } = await reader.read();
@@ -122,9 +127,8 @@ document.getElementById('chat-form').addEventListener('submit', async (e) => {
             for (const line of lines) {
                 if (line.startsWith('data: ')) {
                     const jsonData = JSON.parse(line.slice(6));
-                    markdownBuffer += jsonData.chunk;
-                    const htmlContent = marked.parse(markdownBuffer);
-                    // const htmlContent = markdownBuffer;
+                    aiResponseElement.markdownBuffer += jsonData.chunk;
+                    const htmlContent = marked.parse(aiResponseElement.markdownBuffer);
                     aiResponseElement.innerHTML = htmlContent;
                 }
             }
@@ -133,8 +137,8 @@ document.getElementById('chat-form').addEventListener('submit', async (e) => {
         // 残りのバッファを処理
         if (buffer.startsWith('data: ')) {
             const jsonData = JSON.parse(buffer.slice(6));
-            markdownBuffer += jsonData.chunk;
-            const htmlContent = marked.parse(markdownBuffer);
+            aiResponseElement.markdownBuffer += jsonData.chunk;
+            const htmlContent = marked.parse(aiResponseElement.markdownBuffer);
             aiResponseElement.innerHTML = htmlContent;
         }
     } catch (error) {
