@@ -1,7 +1,7 @@
 {# templates/index.html #}
 {% extends "base.html" %}
 
-{% block title %}WEB APP TEMLATE Home{% endblock %}
+{% block title %}WEB APP TEMPLATE Home{% endblock %}
 
 {% block content %}
 <div class="d-flex justify-content-center">
@@ -14,12 +14,12 @@
     <div class="col-12 col-md-8">
       <div class="card">
         <div class="card-header">
-          <h5 class="mb-0">管理設定</h5>
+          <h5 class="mb-0">Admin Settings</h5>
         </div>
         <div class="card-body">
           <div class="d-grid gap-2">
             <button class="btn btn-danger" id="deleteAllMemos">
-              yxfhy/memoリポジトリ全消去
+              Delete all yxfhy/memo repository files
             </button>
           </div>
         </div>
@@ -30,7 +30,7 @@
 
 <script>
 document.getElementById('deleteAllMemos').addEventListener('click', async function() {
-    if (confirm('yxfhy/memoリポジトリの「memo_」で始まるファイルを全て削除しますか？\nこの操作は取り消せません。')) {
+    if (confirm('Delete all files in the yxfhy/memo repository that start with "memo_"?\nThis action cannot be undone.')) {
         try {
             const response = await fetch('/memo/delete-all', {
                 method: 'POST',
@@ -42,15 +42,15 @@ document.getElementById('deleteAllMemos').addEventListener('click', async functi
             const result = await response.json();
 
             if (!response.ok) {
-                throw new Error(result.detail || '削除に失敗しました');
+                throw new Error(result.detail || 'Failed to delete');
             }
 
             alert(result.message);
-            // 成功したらページをリロード
+            // Reload the page on success
             window.location.reload();
         } catch (error) {
             console.error('Error:', error);
-            alert('削除に失敗しました: ' + error.message);
+            alert('Failed to delete: ' + error.message);
         }
     }
 });
