@@ -1,45 +1,45 @@
 {% extends "base.html" %}
 
-{% block title %}チャット{% endblock %}
+{% block title %}Chat{% endblock %}
 
 {% block content %}
 <div class="container mx-auto px-4 py-8">
     <div class="max-w-2xl mx-auto">
         <div class="flex justify-between items-center mb-6">
-            <h1 class="text-2xl font-bold">チャット</h1>
-            <p class="text-gray-600" style="text-align: left;">チャット履歴は保存されません</p>
+            <h1 class="text-2xl font-bold">Chat</h1>
+            <p class="text-gray-600" style="text-align: left;">Chat history is not saved</p>
             <div class="flex items-center gap-4">
-                <span class="text-gray-600">{{ username }}さん</span>
+                <span class="text-gray-600">{{ username }}</span>
                 <button id="clear-chat" 
                         class="bg-red-500 text-white px-4 py-2 rounded-lg hover:bg-red-600 transition-colors" style="text-align: right;">
-                    履歴をクリア
+                    Clear History
                 </button>
             </div>
         </div>
         
         <div id="chat-messages" class="bg-white rounded-lg shadow p-4 mb-4 h-96 overflow-y-auto">
-            <!-- メッセージはここに表示されます -->
+            <!-- Messages will be displayed here -->
         </div>
 
         <form id="chat-form" class="flex gap-2">
             <textarea 
                    id="message-input" 
                    class="flex-1 border rounded-lg px-4 py-2 focus:outline-none focus:border-blue-500"
-                   placeholder="メッセージを入力... (Shift + Enterで改行)"
+                   placeholder="Type your message... (Shift + Enter for new line)"
                    rows="3"></textarea>
             <button type="submit" 
                     class="bg-blue-500 text-white px-6 py-2 rounded-lg hover:bg-blue-600 transition-colors">
-                送信
+                Send
             </button>
         </form>
     </div>
 </div>
 
-<!-- トースト通知 -->
+<!-- Toast Notification -->
 <div class="toast-container position-fixed bottom-0 end-0 p-3">
     <div id="copyToast" class="toast" role="alert" aria-live="assertive" aria-atomic="true">
         <div class="toast-header">
-            <strong class="me-auto">通知</strong>
+            <strong class="me-auto">Notification</strong>
             <button type="button" class="btn-close" data-bs-dismiss="toast" aria-label="Close"></button>
         </div>
         <div class="toast-body">
@@ -49,7 +49,7 @@
 
 <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
 <script>
-// チャット履歴をクリアする関数
+// Function to clear chat history
 async function clearChatHistory() {
     try {
         await fetch('/chat/clear', {
@@ -64,10 +64,10 @@ async function clearChatHistory() {
     }
 }
 
-// ページ読み込み時にセッションの会話履歴をクリア
+// Clear chat history on page load
 window.addEventListener('load', clearChatHistory);
 
-// チャット履歴のクリアボタンのイベントリスナー
+// Event listener for clear history button
 document.getElementById('clear-chat').addEventListener('click', clearChatHistory);
 
 document.getElementById('chat-form').addEventListener('submit', async (e) => {
@@ -77,10 +77,10 @@ document.getElementById('chat-form').addEventListener('submit', async (e) => {
     const message = input.value.trim();
     if (!message) return;
 
-    // 入力フィールドを即座にクリア
+    // Immediately clear the input field
     input.value = '';
 
-    // ユーザーメッセージを表示
+    // Display user message
     const chatMessages = document.getElementById('chat-messages');
     chatMessages.innerHTML += `
         <div class="mb-4">
@@ -90,21 +90,21 @@ document.getElementById('chat-form').addEventListener('submit', async (e) => {
         </div>
     `;
 
-    // 一意のIDを生成
+    // Generate a unique ID
     const responseId = 'ai-response-' + Date.now();
 
-    // AIの応答を表示するための要素を作成
+    // Create element for AI response
     const aiResponseDiv = document.createElement('div');
     aiResponseDiv.className = 'mb-4 text-right';
     aiResponseDiv.innerHTML = `
         <div class="bg-gray-100 rounded-lg p-3 inline-block">
             <div id="${responseId}"></div>
             <button class="copy-button bg-gray-200 text-gray-700 px-2 py-1 rounded text-sm ml-2 hover:bg-gray-300 transition-colors">
-                コピー
+                Copy
             </button>
             {% if request.session.get("username") == "yxfhy" %}
             <button class="github-push-button bg-gray-200 text-gray-700 px-2 py-1 rounded text-sm ml-2 hover:bg-gray-300 transition-colors">
-                GitHubにプッシュ
+                Push to GitHub
             </button>
             {% endif %}
         </div>
@@ -113,23 +113,23 @@ document.getElementById('chat-form').addEventListener('submit', async (e) => {
     const aiResponseElement = document.getElementById(responseId);
     aiResponseElement.markdownBuffer = '';
 
-    // コピーボタンのイベントリスナーを追加
+    // Add event listener for copy button
     const copyButton = aiResponseDiv.querySelector('.copy-button');
     copyButton.addEventListener('click', async () => {
         try {
             await navigator.clipboard.writeText(aiResponseElement.markdownBuffer);
-            // コピー成功時のフィードバック
+            // Feedback on successful copy
             const originalText = copyButton.textContent;
-            copyButton.textContent = 'コピー完了！';
+            copyButton.textContent = 'Copied!';
             setTimeout(() => {
                 copyButton.textContent = originalText;
             }, 2000);
         } catch (err) {
-            console.error('クリップボードへのコピーに失敗しました:', err);
+            console.error('Failed to copy to clipboard:', err);
         }
     });
 
-    // GitHubプッシュボタンのイベントリスナーを追加
+    // Add event listener for GitHub push button
     const githubPushButton = aiResponseDiv.querySelector('.github-push-button');
     githubPushButton.addEventListener('click', async () => {
         try {
@@ -145,30 +145,30 @@ document.getElementById('chat-form').addEventListener('submit', async (e) => {
             });
 
             if (!response.ok) {
-                throw new Error('GitHubへのプッシュに失敗しました');
+                throw new Error('Failed to push to GitHub');
             }
 
             const result = await response.json();
             console.log('Response:', result);
             
-            // 成功メッセージを表示
+            // Show success message
             const toast = new bootstrap.Toast(document.getElementById('copyToast'), {
                 delay: 3000
             });
             document.querySelector('.toast-body').textContent = 
-                'GitHubにプッシュしました。新しいタブで開きます。';
+                'Pushed to GitHub. Opening in a new tab.';
             toast.show();
 
-            // 新しいタブでGitHubのファイルを開く
+            // Open the GitHub file in a new tab
             window.open(result.url, '_blank');
         } catch (error) {
             console.error('Error:', error);
-            alert('GitHubへのプッシュに失敗しました: ' + error.message);
+            alert('Failed to push to GitHub: ' + error.message);
         }
     });
 
     try {
-        // ストリーミングレスポンスを処理
+        // Handle streaming response
         const response = await fetch('/chat/send/stream', {
             method: 'POST',
             headers: {
@@ -199,7 +199,7 @@ document.getElementById('chat-form').addEventListener('submit', async (e) => {
             }
         }
 
-        // 残りのバッファを処理
+        // Handle remaining buffer
         if (buffer.startsWith('data: ')) {
             const jsonData = JSON.parse(buffer.slice(6));
             aiResponseElement.markdownBuffer += jsonData.chunk;
@@ -208,21 +208,23 @@ document.getElementById('chat-form').addEventListener('submit', async (e) => {
         }
     } catch (error) {
         console.error('Error:', error);
-        aiResponseElement.innerHTML = 'エラーが発生しました。';
+        aiResponseElement.innerHTML = 'An error occurred.';
     }
     
-    // 最新のメッセージまでスクロール
+    // Scroll to the latest message
     chatMessages.scrollTop = chatMessages.scrollHeight;
 });
 
-// シフトキー押下時の動作を制御
+// Handle Shift+Enter for new line
+// and Enter for submit
+//
 document.getElementById('message-input').addEventListener('keydown', function(e) {
     if (e.key === 'Enter') {
         if (e.shiftKey) {
-            // シフトキーが押されている場合は改行を許可
+            // Allow new line with Shift+Enter
             return true;
         } else {
-            // シフトキーが押されていない場合は送信
+            // Submit on Enter
             e.preventDefault();
             document.getElementById('chat-form').dispatchEvent(new Event('submit'));
         }

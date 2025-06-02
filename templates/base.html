@@ -41,25 +41,25 @@
         <ul class="navbar-nav ms-auto">
           {% if request.session.get("username") %}
           <li class="nav-item">
-            <a class="nav-link" href="/memo">メモ</a>
+            <a class="nav-link" href="/memo">Memo</a>
           </li>
           {% if request.session.get("username") == "yxfhy" %}
           <li class="nav-item">
-            <a class="nav-link" href="/chat">チャット</a>
+            <a class="nav-link" href="/chat">Chat</a>
           </li>
           <li class="nav-item">
             <a class="nav-link" href="/file-drop">file-drop</a>
           </li>
           {% endif %}
           <li class="nav-item">
-            <a class="nav-link" href="/logout">ログアウト</a>
+            <a class="nav-link" href="/logout">Logout</a>
           </li>
           {% else %}
           <li class="nav-item">
-            <a class="nav-link" href="/login">ログイン</a>
+            <a class="nav-link" href="/login">Login</a>
           </li>
           <li class="nav-item">
-            <a class="nav-link" href="/signup">サインアップ</a>
+            <a class="nav-link" href="/signup">Sign Up</a>
           </li>
           {% endif %}
         </ul>
