@@ -2,12 +2,12 @@
 
 import json
 
-from fastapi import APIRouter, Request
+from fastapi import APIRouter, HTTPException, Request
 from fastapi.responses import HTMLResponse, StreamingResponse
 from fastapi.templating import Jinja2Templates
 from pydantic import BaseModel
 
-from utils.utils import SYSTEM_PROMPT, ChatBot
+from utils.utils import SYSTEM_PROMPT, ChatBot, create_github_file
 
 router = APIRouter(prefix="/chat", tags=["chat"])
 templates = Jinja2Templates(directory="templates")
@@ -93,6 +93,15 @@ async def clear_chat(request: Request):
 
 @router.post("/push")
 async def push_to_github(request: Request, data: PushData):
-    print("Received data:", data)
-    print("markdownBuffer:", data.markdownBuffer)
-    return {"status": "success"}
+
+    # セッションからユーザー名を取得
+    username = request.session.get("username")
+    if not username or username != "yxfhy":
+        raise HTTPException(status_code=403, detail="権限がありません")
+
+    try:
+        # GitHubにプッシュ
+        result = create_github_file("yxfhy", "memo", data.markdownBuffer)
+        return {"status": "success", "url": result["content"]["html_url"]}
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))

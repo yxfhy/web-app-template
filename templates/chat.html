@@ -35,6 +35,18 @@
     </div>
 </div>
 
+<!-- トースト通知 -->
+<div class="toast-container position-fixed bottom-0 end-0 p-3">
+    <div id="copyToast" class="toast" role="alert" aria-live="assertive" aria-atomic="true">
+        <div class="toast-header">
+            <strong class="me-auto">通知</strong>
+            <button type="button" class="btn-close" data-bs-dismiss="toast" aria-label="Close"></button>
+        </div>
+        <div class="toast-body">
+        </div>
+    </div>
+</div>
+
 <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
 <script>
 // チャット履歴をクリアする関数
@@ -131,10 +143,27 @@ document.getElementById('chat-form').addEventListener('submit', async (e) => {
                     markdownBuffer: aiResponseElement.markdownBuffer
                 })
             });
+
+            if (!response.ok) {
+                throw new Error('GitHubへのプッシュに失敗しました');
+            }
+
             const result = await response.json();
             console.log('Response:', result);
+            
+            // 成功メッセージを表示
+            const toast = new bootstrap.Toast(document.getElementById('copyToast'), {
+                delay: 3000
+            });
+            document.querySelector('.toast-body').textContent = 
+                'GitHubにプッシュしました。新しいタブで開きます。';
+            toast.show();
+
+            // 新しいタブでGitHubのファイルを開く
+            window.open(result.url, '_blank');
         } catch (error) {
             console.error('Error:', error);
+            alert('GitHubへのプッシュに失敗しました: ' + error.message);
         }
     });
 
