@@ -92,11 +92,6 @@ async def memo_page(
     end_idx = start_idx + limit
     user_memos = user_memos[start_idx:end_idx]
 
-    # ChatBotインスタンスを削除
-    from routers import chat
-
-    chat.chatbot = None  # noqa: E501
-
     return templates.TemplateResponse(
         "memo.html",
         {
