@@ -317,39 +317,39 @@ class ChatBot:
         self.messages = [{"role": "system", "content": SYSTEM_PROMPT}]
 
 
-# ChatBotのテスト
-if __name__ == "__main__":
+def search_web(query):
+    """Web検索を使って最新情報を取得する関数"""
+    # openai_clientが未定義の場合は初期化
+    global openai_client
+    if "openai_client" not in globals() or openai_client is None:
+        _, _, openai_client, _ = initialize_clients()
+    response = openai_client.chat.completions.create(
+        model="gpt-4o-search-preview",
+        web_search_options={
+            "search_context_size": "medium",  # 検索深度
+            "user_location": {
+                "type": "approximate",
+                "approximate": {
+                    "country": "JP",  # 地域
+                },
+            },
+        },
+        messages=[{"role": "user", "content": query}],
+    )
+
+    return response.choices[0].message.content
+
+
+def test_search_web():
+    """search_web関数のテスト関数"""
+    query = "2024年の日本の天気予報"
     try:
-        # テスト用のリポジトリ情報
-        test_owner = "yxfhy"
-        test_repo = "memo"
-
-        # リポジトリのルートコンテンツを取得
-        contents = get_github_repo_contents(test_owner, test_repo)
-        print("リポジトリのルートコンテンツ:")
-        for item in contents:
-            print(f"- {item['name']} ({item['type']})")
-
-        # READMEファイルの内容を取得
-        readme = get_github_repo_contents(test_owner, test_repo, "README.md")
-        print("\nREADMEの内容:")
-        print(readme.get("content", "コンテンツが見つかりません"))
-
-        # 新しいメモファイルを作成
-        test_content = """# テストメモ
-
-これはテスト用のメモファイルです。
-- 項目1
-- 項目2
-- 項目3
-
-作成日時: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}
-"""
-        new_file = create_github_file(test_owner, test_repo, test_content)
-        print("\n新しいファイルを作成しました:")
-        print(f"ファイル名: {new_file['content']['name']}")
-        print(f"パス: {new_file['content']['path']}")
-        print(f"SHA: {new_file['content']['sha']}")
-
+        result = search_web(query)
+        print("検索クエリ:", query)
+        print("検索結果:", result)
     except Exception as e:
-        print(f"エラーが発生しました: {str(e)}")
+        print(f"search_webのテストでエラーが発生しました: {str(e)}")
+
+
+if __name__ == "__main__":
+    test_search_web()
