@@ -1,3 +1,4 @@
 {
-  "showLLMGreeting": false
+  "showLLMGreeting": false,
+  "OPEN_AI_CHAT_MODEL": "gpt-4.1"
 } 

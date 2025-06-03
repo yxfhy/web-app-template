@@ -1,4 +1,5 @@
 import base64
+import json
 import os
 from datetime import datetime
 from typing import Any, Dict, Optional
@@ -162,14 +163,14 @@ def initialize_clients():
     使い方:
         1. .env ファイルに以下の環境変数を設定してください:
             - OPENAI_API_KEY
-            - (任意) OPENAI_MODEL
+            - (任意) OPEN_AI_CHAT_MODEL
 
         2. 関数を呼び出すと、API キーとクライアントインスタンスがタプルで返されます。
 
     戻り値:
         (
             OPENAI_API_KEY,      # 0: OpenAI APIキー
-            OPENAI_MODEL,        # 1: OpenAI モデル名
+            OPEN_AI_CHAT_MODEL,  # 1: OpenAI モデル名
             openai_client,       # 2: OpenAI インスタンス
             SYSTEM_PROMPT        # 3: システムプロンプト
         )
@@ -180,11 +181,11 @@ def initialize_clients():
     例:
         api_keys_and_clients = initialize_clients()
         OPENAI_API_KEY = api_keys_and_clients[0]
-        OPENAI_MODEL = api_keys_and_clients[1]
+        OPEN_AI_CHAT_MODEL = api_keys_and_clients[1]
         openai_client = api_keys_and_clients[2]
         SYSTEM_PROMPT = api_keys_and_clients[3]
     """
-    global OPENAI_API_KEY, OPENAI_MODEL
+    global OPENAI_API_KEY, OPEN_AI_CHAT_MODEL
     global openai_client
 
     # .env からキー類を読み込む
@@ -195,8 +196,13 @@ def initialize_clients():
     if not OPENAI_API_KEY:
         raise RuntimeError("OPENAI_API_KEY is not set in .env")
 
-    # モデル名（未設定なら gpt-4.1）
-    OPENAI_MODEL = os.getenv("OPENAI_MODEL", "gpt-4.1")
+    # config.json からモデル名を取得
+    try:
+        with open("config.json", "r") as f:
+            config = json.load(f)
+            OPEN_AI_CHAT_MODEL = config.get("OPEN_AI_CHAT_MODEL", "gpt-4.1")
+    except Exception:
+        OPEN_AI_CHAT_MODEL = "gpt-4.1"
 
     # ------------------------------------------------------------------
     # API クライアント
@@ -204,7 +210,7 @@ def initialize_clients():
 
     return (
         OPENAI_API_KEY,
-        OPENAI_MODEL,
+        OPEN_AI_CHAT_MODEL,
         openai_client,
         SYSTEM_PROMPT,
     )
@@ -222,7 +228,7 @@ def generate_ai_reply(user_prompt: str, temperature: float) -> str:
         str: 生成されたメッセージ
     """
     response = openai_client.chat.completions.create(
-        model=OPENAI_MODEL,
+        model=OPEN_AI_CHAT_MODEL,
         messages=[
             {"role": "system", "content": SYSTEM_PROMPT},
             {
@@ -258,13 +264,13 @@ class ChatBot:
 
         load_dotenv()
         self.OPENAI_API_KEY = os.getenv("OPENAI_API_KEY")
-        self.OPENAI_MODEL = os.getenv("OPENAI_MODEL", "gpt-4.1")
+        self.OPENAI_CHAT_MODEL = os.getenv("OPEN_AI_CHAT_MODEL", "gpt-4.1")
         self.openai_client = OpenAI(api_key=self.OPENAI_API_KEY)
 
     def get_ai_messages(self, user_message):
         self.messages.append({"role": "user", "content": user_message})
         response = self.openai_client.chat.completions.create(
-            model=self.OPENAI_MODEL,
+            model=self.OPENAI_CHAT_MODEL,
             messages=self.messages,
             max_tokens=32000,
             temperature=self.temperature,
@@ -282,7 +288,7 @@ class ChatBot:
         """ストリーミング形式でAIの応答を取得（非同期版）"""
         self.messages.append({"role": "user", "content": user_message})
         stream = self.openai_client.chat.completions.create(
-            model=self.OPENAI_MODEL,
+            model=self.OPENAI_CHAT_MODEL,
             messages=self.messages,
             max_tokens=32000,
             temperature=self.temperature,
