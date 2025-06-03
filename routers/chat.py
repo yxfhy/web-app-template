@@ -41,6 +41,7 @@ async def chat_page(request: Request):
         logging.warning(
             "⚠️ ChatBot new: 毎回インスタンス再生成中\n"
             "   • モデル接続・メモリを都度確保します（負荷↑）\n"
+            "   • 同一ユーザーで別ウィンドウで開いたチャットも同一のインスタンスで処理されます！！！\n"
             "   • 履歴は Cookie セッション依存 → サイズ超過で消失の恐れ\n"
             "   • 多人数運用や長期保存が必要なら Redis / DB へ移行推奨\n"
             "   • メモリリーク防止の GC or TTL 設計を忘れずに"
