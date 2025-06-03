@@ -72,6 +72,9 @@ app.include_router(chat.router)
 
 @app.get("/", response_class=HTMLResponse)
 async def read_root(request: Request):
+    from routers import chat
+
+    chat.chatbot = None
     # config.jsonの読み込み
     with open("config.json", "r") as f:
         config = json.load(f)

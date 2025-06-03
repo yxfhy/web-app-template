@@ -12,6 +12,9 @@ from utils.utils import SYSTEM_PROMPT, ChatBot, create_github_file
 router = APIRouter(prefix="/chat", tags=["chat"])
 templates = Jinja2Templates(directory="templates")
 
+# グローバルなChatBotインスタンス
+chatbot = None
+
 
 class Message(BaseModel):
     message: str
@@ -24,8 +27,11 @@ class PushData(BaseModel):
 @router.get("/", response_class=HTMLResponse)
 async def chat_page(request: Request):
     """チャットページを表示"""
-    # セッションからユーザー名を取得
+    global chatbot
     username = request.session.get("username", "ゲスト")
+    # ChatBotインスタンスを生成
+    if chatbot is None:
+        chatbot = ChatBot(temperature=0.1)
     return templates.TemplateResponse(
         "chat.html", {"request": request, "username": username}
     )
@@ -34,21 +40,15 @@ async def chat_page(request: Request):
 @router.post("/send")
 async def send_message(message: Message, request: Request):
     """メッセージを送信してAIの応答を取得"""
+    global chatbot
     try:
-        # セッションからメッセージ履歴を取得
         default_messages = [{"role": "system", "content": SYSTEM_PROMPT}]
         messages = request.session.get("chat_messages", default_messages)
-
-        # ChatBotインスタンスを作成
-        chatbot = ChatBot(temperature=0.1)
+        if chatbot is None:
+            chatbot = ChatBot(temperature=0.1)
         chatbot.messages = messages
-
-        # メッセージを送信して応答を取得
         response = chatbot.get_ai_messages(message.message)
-
-        # 更新されたメッセージ履歴をセッションに保存
         request.session["chat_messages"] = chatbot.messages
-
         return {"response": response}
     except Exception as e:
         return {"response": f"エラーが発生しました: {str(e)}"}
@@ -57,14 +57,11 @@ async def send_message(message: Message, request: Request):
 @router.post("/send/stream")
 async def send_message_stream(message: Message, request: Request):
     """メッセージを送信してAIの応答をストリーミング形式で取得"""
+    global chatbot
     try:
-        # セッションからメッセージ履歴を取得
         default_messages = [{"role": "system", "content": SYSTEM_PROMPT}]
-        messages = request.session.get("chat_messages", default_messages)
-
-        # ChatBotインスタンスを作成
-        chatbot = ChatBot(temperature=0.1)
-        chatbot.messages = messages
+        if chatbot is None:
+            chatbot = ChatBot(temperature=0.1)
 
         async def generate():
             try:
@@ -72,7 +69,6 @@ async def send_message_stream(message: Message, request: Request):
                     data = {"chunk": chunk}
                     yield f"data: {json.dumps(data)}\n\n"
             finally:
-                # 更新されたメッセージ履歴をセッションに保存
                 request.session["chat_messages"] = chatbot.messages
 
         return StreamingResponse(generate(), media_type="text/event-stream")
@@ -86,7 +82,9 @@ async def send_message_stream(message: Message, request: Request):
 @router.post("/clear")
 async def clear_chat(request: Request):
     """チャット履歴をクリア"""
-    # メッセージ履歴を初期化
+    global chatbot
+    if chatbot is not None:
+        chatbot.clear_messages()
     request.session["chat_messages"] = [{"role": "system", "content": SYSTEM_PROMPT}]
     return {"status": "success"}
 
