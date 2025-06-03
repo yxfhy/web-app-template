@@ -78,3 +78,27 @@ p {
   color: #718096;
   text-align: center;
 } */
+
+.date-text {
+  font-size: 0.85em !important;
+  color: #555;
+  font-weight: normal;
+}
+.clock-num {
+  font-size: 2.2em;
+  font-weight: bold;
+  margin: 0 0.1em;
+}
+.clock-unit {
+  font-size: 0.8em;
+  color: #666;
+  margin-right: 0.3em;
+  vertical-align: baseline;
+}
+.clock-num-small {
+  font-size: 0.8em;
+  color: #666;
+  font-weight: bold;
+  margin: 0 0.1em;
+  vertical-align: baseline;
+}

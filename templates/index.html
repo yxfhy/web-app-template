@@ -8,9 +8,16 @@
   <p class="welcome-message" style="max-width: 50%; text-align: center;">{{ message | safe }}</p>
 </div>
 
+<div class="d-flex justify-content-center">
+  <p class="welcome-message" style="max-width: 50%; text-align: center;">
+    <span id="realtime-clock"></span>
+  </p>
+</div>
+
 <script>
 (function() {
   const weekDays = ["日", "月", "火", "水", "木", "金", "土"];
+  function pad(num) { return num.toString().padStart(2, '0'); }
   function updateClock() {
     const clock = document.getElementById('realtime-clock');
     if (!clock) return;
@@ -18,8 +25,13 @@
     const month = now.getMonth() + 1;
     const day = now.getDate();
     const week = weekDays[now.getDay()];
-    const timeStr = now.toLocaleTimeString('ja-JP', { hour12: false });
-    const dateStr = `${month}月${day}日（${week}）`;
+    const hours = now.getHours();
+    const minutes = now.getMinutes();
+    const seconds = now.getSeconds();
+    const dateStr = `<span class='date-text'>${month}月${day}日（${week}）</span>`;
+    const timeStr = `<span class='clock-num'>${hours}</span><span class='clock-unit'>時</span>` +
+      `<span class='clock-num'>${pad(minutes)}</span><span class='clock-unit'>分</span>` +
+      `<span class='clock-num-small'>${pad(seconds)}</span><span class='clock-unit'>秒</span>`;
     clock.innerHTML = `${dateStr}<br>${timeStr}`;
   }
   setInterval(updateClock, 1000);
