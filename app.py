@@ -10,6 +10,7 @@
 from __future__ import annotations
 
 import asyncio
+import json
 import os
 import re
 from datetime import datetime, timedelta, timezone
@@ -71,30 +72,36 @@ app.include_router(chat.router)
 
 @app.get("/", response_class=HTMLResponse)
 async def read_root(request: Request):
+    # config.jsonの読み込み
+    with open("config.json", "r") as f:
+        config = json.load(f)
+    show_llm_greeting = config.get("showLLMGreeting", True)
+
     jst = timezone(timedelta(hours=9))
     now = datetime.now(jst).strftime("%Y-%m-%d %H:%M:%S")
 
-    username = request.session.get("username")  # ★セッション取得
-
-    # ユーザー名があれば呼びかけに含める
-    prompt = (
-        f"現在{now}、今日、この時間帯にふさわしい、"
-        f"でもちょっと変わった挨拶をして"
-        + (f"。ユーザー名「{username}」に呼びかけて" if username else "")
-    )
-
-    try:
-        ai_message: str = await asyncio.to_thread(generate_ai_reply, prompt, 0.99)
-        # URLをリンクに変換
-        ai_message = convert_urls_to_links(ai_message)
-    except Exception as e:
-        raise HTTPException(status_code=500, detail=str(e))
+    if show_llm_greeting:
+        username = request.session.get("username")  # ★セッション取得
+        prompt = (
+            f"現在{now}、今日、この時間帯にふさわしい、"
+            f"でもちょっと変わった挨拶をして"
+            + (f"。ユーザー名「{username}」に呼びかけて" if username else "")
+        )
+        try:
+            ai_message: str = await asyncio.to_thread(generate_ai_reply, prompt, 0.99)
+            ai_message = convert_urls_to_links(ai_message)
+        except Exception as e:
+            raise HTTPException(status_code=500, detail=str(e))
+        message = ai_message
+    else:
+        # 日時を大きく表示するHTMLを生成
+        message = f'<span style="font-size:2.5em; font-weight:bold;">{now}</span>'
 
     return templates.TemplateResponse(
         "index.html",
         {
             "request": request,
-            "message": ai_message,
+            "message": message,
         },
     )
 
