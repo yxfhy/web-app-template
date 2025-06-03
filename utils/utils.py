@@ -285,9 +285,6 @@ class ChatBot:
         return ai_response
 
     async def get_ai_messages_stream(self, user_message):
-
-        print("BEFOREmessages:" + str(self.messages))
-
         """ストリーミング形式でAIの応答を取得（非同期版）"""
         self.messages.append({"role": "user", "content": user_message})
         stream = self.openai_client.chat.completions.create(
@@ -314,7 +311,6 @@ class ChatBot:
                 "content": full_response,
             }
         )
-        print("messages:" + str(self.messages))
 
     def clear_messages(self):
         self.messages = [{"role": "system", "content": SYSTEM_PROMPT}]
