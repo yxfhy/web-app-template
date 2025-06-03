@@ -94,8 +94,19 @@ async def read_root(request: Request):
             raise HTTPException(status_code=500, detail=str(e))
         message = ai_message
     else:
-        # 日時を大きく表示するHTMLを生成
-        message = f'<span style="font-size:2.5em; font-weight:bold;">{now}</span>'
+        # 日時を日本語形式で表示するHTMLを生成
+        jst_now = datetime.now(jst)
+        week_days = ["月", "火", "水", "木", "金", "土", "日"]
+        month = jst_now.month
+        day = jst_now.day
+        week = week_days[jst_now.weekday()]
+        time_str = jst_now.strftime("%H:%M:%S")
+        date_str = f"{month}月{day}日（{week}）"
+        message = (
+            f'<span id="realtime-clock" style="font-size:2.5em; font-weight:bold;">'
+            f"{date_str}<br>{time_str}"
+            f"</span>"
+        )
 
     return templates.TemplateResponse(
         "index.html",
