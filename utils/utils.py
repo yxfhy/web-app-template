@@ -323,8 +323,15 @@ def search_web(query):
     global openai_client
     if "openai_client" not in globals() or openai_client is None:
         _, _, openai_client, _ = initialize_clients()
+    # config.jsonからモデル名を取得
+    try:
+        with open("config.json", "r") as f:
+            config = json.load(f)
+            search_model = config.get("OPEN_AI_SERARCH_MODEL", "gpt-4o-search-preview")
+    except Exception:
+        search_model = "gpt-4o-search-preview"
     response = openai_client.chat.completions.create(
-        model="gpt-4o-search-preview",
+        model=search_model,
         web_search_options={
             "search_context_size": "medium",  # 検索深度
             "user_location": {
