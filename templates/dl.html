@@ -31,6 +31,94 @@
         const resultContainer = document.getElementById('result-container');
         const dataTable = document.getElementById('data-table');
 
+        let currentData = [];
+        let sortDirection = {};
+
+        function sortTable(column) {
+            if (!sortDirection[column]) {
+                sortDirection[column] = 'asc';
+            } else {
+                sortDirection[column] = sortDirection[column] === 'asc' ? 'desc' : 'asc';
+            }
+
+            currentData.sort((a, b) => {
+                const aValue = parseInt(a[column]);
+                const bValue = parseInt(b[column]);
+                return sortDirection[column] === 'asc' ? aValue - bValue : bValue - aValue;
+            });
+
+            // テーブルを再描画
+            const dataTable = document.getElementById('data-table');
+            dataTable.innerHTML = '';
+            
+            // テーブルの作成
+            const table = document.createElement('table');
+            table.className = 'min-w-full bg-white border border-gray-300';
+            
+            // ヘッダーの作成
+            const thead = document.createElement('thead');
+            const headerRow = document.createElement('tr');
+            Object.keys(currentData[0]).forEach(key => {
+                if (key !== 'Google_Search_URL' && key !== 'Link') {
+                    const th = document.createElement('th');
+                    th.className = 'px-4 py-2 border-b border-gray-300 bg-gray-100';
+                    if (key === 'Size') {
+                        th.textContent = `${key} `;
+                    } else if (key === 'Seeders' || key === 'Leechers') {
+                        th.className += ' cursor-pointer hover:bg-gray-200';
+                        const arrow = sortDirection[key] === 'asc' ? '↑' : '↓';
+                        th.textContent = `${key} ${arrow}`;
+                        th.onclick = () => sortTable(key);
+                    } else {
+                        th.textContent = key;
+                    }
+                    headerRow.appendChild(th);
+                }
+            });
+            thead.appendChild(headerRow);
+            table.appendChild(thead);
+            
+            // データ行の作成
+            const tbody = document.createElement('tbody');
+            currentData.forEach(row => {
+                const tr = document.createElement('tr');
+                Object.entries(row).forEach(([key, value]) => {
+                    if (key !== 'Google_Search_URL' && key !== 'Link') {
+                        const td = document.createElement('td');
+                        td.className = 'px-4 py-2 border-b border-gray-300';
+                        if (typeof value === 'string' && value.startsWith('magnet:')) {
+                            const a = document.createElement('a');
+                            a.href = value;
+                            a.textContent = 'マグネットリンク';
+                            a.className = 'text-blue-600 hover:text-blue-800';
+                            td.appendChild(a);
+                        } else if (key === 'Name') {
+                            const a = document.createElement('a');
+                            a.href = row['Google_Search_URL'];
+                            a.textContent = value;
+                            a.className = 'text-blue-600 hover:text-blue-800';
+                            a.target = '_blank';
+                            td.appendChild(a);
+                        } else if (key === 'Size') {
+                            const a = document.createElement('a');
+                            a.href = row['Link'];
+                            a.textContent = value;
+                            a.className = 'text-blue-600 hover:text-blue-800';
+                            a.target = '_blank';
+                            td.appendChild(a);
+                        } else {
+                            td.textContent = value;
+                        }
+                        tr.appendChild(td);
+                    }
+                });
+                tbody.appendChild(tr);
+            });
+            table.appendChild(tbody);
+            
+            dataTable.appendChild(table);
+        }
+
         ws.onmessage = function(event) {
             const data = JSON.parse(event.data);
             
@@ -41,6 +129,9 @@
             } else if (data.type === 'complete') {
                 document.getElementById('progress-container').classList.add('hidden');
                 resultContainer.classList.remove('hidden');
+                
+                currentData = data.data;
+                sortDirection = {};
                 
                 // データテーブルの作成
                 const table = document.createElement('table');
@@ -55,6 +146,10 @@
                         th.className = 'px-4 py-2 border-b border-gray-300 bg-gray-100';
                         if (key === 'Size') {
                             th.textContent = `${key} `;
+                        } else if (key === 'Seeders' || key === 'Leechers') {
+                            th.className += ' cursor-pointer hover:bg-gray-200';
+                            th.textContent = `${key} ↕`;
+                            th.onclick = () => sortTable(key);
                         } else {
                             th.textContent = key;
                         }
