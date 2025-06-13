@@ -35,6 +35,7 @@ RUN pip install --no-cache-dir beautifulsoup4
 RUN pip install --no-cache-dir requests
 RUN pip install --no-cache-dir markdown2
 RUN pip install --no-cache-dir pandas
+RUN pip install --no-cache-dir aiohttp
 
 
 COPY . /app
