@@ -2,8 +2,7 @@ import asyncio
 from typing import Dict, List
 from urllib.parse import urljoin
 
-import pandas as pd
-import requests
+import aiohttp
 from bs4 import BeautifulSoup
 from fastapi import APIRouter, Request, WebSocket, WebSocketDisconnect
 from fastapi.responses import HTMLResponse
@@ -15,60 +14,54 @@ templates = Jinja2Templates(directory="templates")
 
 class Config:
     MAX_PAGES = 5
+    CHUNK_SIZE = 100  # 一度に処理するデータ量を制限
 
 
-def scrape_sukebei(url: str, params: dict | None = None) -> pd.DataFrame:
+async def scrape_sukebei(
+    session: aiohttp.ClientSession, url: str, params: dict | None = None
+) -> List[Dict]:
     """
-    Sukebei.nyaa.si の検索結果ページから
-    Name, Link(magnet 優先), Size, Date, Seeders, Leechers を取得して
-    pandas.DataFrame を返します。
+    Sukebei.nyaa.si の検索結果ページからデータを取得します。
+    メモリ効率を考慮して、pandasの代わりにリストを使用します。
     """
-    headers = {"User-Agent": "Mozilla/5.0"}  # 簡易的な UA
-    res = requests.get(url, params=params, headers=headers, timeout=30)
-    res.raise_for_status()
+    headers = {"User-Agent": "Mozilla/5.0"}
+    async with session.get(url, params=params, headers=headers, timeout=30) as res:
+        res.raise_for_status()
+        html = await res.text()
 
-    soup = BeautifulSoup(res.text, "html.parser")
+    soup = BeautifulSoup(html, "html.parser")
     rows = soup.select("table tbody tr")
 
     records = []
     for r in rows:
         tds = r.find_all("td")
-        if len(tds) < 7:  # 列不足行をスキップ
+        if len(tds) < 7:
             continue
 
-        # --- Name ---
         name = tds[1].get_text(strip=True)
-
-        # --- Magnet / Torrent link ---
         magnet_tag = tds[2].find("a", title="Magnet link")
-        if magnet_tag:
-            link = magnet_tag["href"]
-        else:
-            torrent_tag = tds[2].find("a", href=True)
-            link = urljoin(url, torrent_tag["href"]) if torrent_tag else ""
-
-        # --- Size ---
-        size = tds[3].get_text(strip=True)
-
-        # --- Date ---
-        date = tds[4].get_text(strip=True)
-
-        # --- Seeders & Leechers ---
-        seeders = int(tds[5].get_text(strip=True))
-        leechers = int(tds[6].get_text(strip=True))
-
-        records.append(
-            {
-                "Name": name,
-                "Link": link,
-                "Size": size,
-                "Date": date,
-                "Seeders": seeders,
-                "Leechers": leechers,
-            }
+        link = (
+            magnet_tag["href"]
+            if magnet_tag
+            else (
+                urljoin(url, tds[2].find("a", href=True)["href"])
+                if tds[2].find("a", href=True)
+                else ""
+            )
         )
 
-    return pd.DataFrame(records)
+        record = {
+            "Name": name,
+            "Link": link,
+            "Size": tds[3].get_text(strip=True),
+            "Date": tds[4].get_text(strip=True),
+            "Seeders": int(tds[5].get_text(strip=True)),
+            "Leechers": int(tds[6].get_text(strip=True)),
+            "Google_Search_URL": f"https://www.google.com/search?q={name}",
+        }
+        records.append(record)
+
+    return records
 
 
 class ConnectionManager:
@@ -105,25 +98,25 @@ async def get_dl_page(request: Request):
 async def websocket_endpoint(websocket: WebSocket):
     await manager.connect(websocket)
     try:
-        dfs = []
-        for page_id in range(1, Config.MAX_PAGES + 1):
-            base_url = "https://sukebei.nyaa.si"
-            params = "?f=2&c=2_2&q=-FC2"
-            target_url = f"{base_url}/{params}&p={page_id}"
-            df = scrape_sukebei(target_url)
-            dfs.append(df)
-            await manager.send_progress(page_id, Config.MAX_PAGES)
-            await asyncio.sleep(0.1)  # 進捗を見やすくするための遅延
+        async with aiohttp.ClientSession() as session:
+            all_records = []
+            for page_id in range(1, Config.MAX_PAGES + 1):
+                base_url = "https://sukebei.nyaa.si"
+                params = "?f=2&c=2_2&q=-FC2"
+                target_url = f"{base_url}/{params}&p={page_id}"
 
-        df = pd.concat(dfs, ignore_index=True)
+                records = await scrape_sukebei(session, target_url)
+                all_records.extend(records)
 
-        # Name列をGoogle検索用のURLに変換した列を追加
-        df["Google_Search_URL"] = df["Name"].apply(
-            lambda name: f"https://www.google.com/search?q="
-            f"{requests.utils.quote(name)}"
-        )
+                await manager.send_progress(page_id, Config.MAX_PAGES)
+                await asyncio.sleep(0.1)
 
-        await manager.send_complete(df.to_dict("records"))
+            # データを分割して送信
+            for i in range(0, len(all_records), Config.CHUNK_SIZE):
+                chunk = all_records[i : i + Config.CHUNK_SIZE]
+                await manager.send_complete(chunk)
+                await asyncio.sleep(0.1)  # クライアントの処理を待つ
+
     except WebSocketDisconnect:
         manager.disconnect(websocket)
     except Exception as e:
