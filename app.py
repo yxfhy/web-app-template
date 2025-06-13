@@ -117,6 +117,13 @@ async def read_root(request: Request):
     )
 
 
+@app.get("/dl", response_class=HTMLResponse)
+async def dl_page(request: Request):
+    if request.session.get("username") != "yxfhy":
+        raise HTTPException(status_code=403, detail="Access denied")
+    return "hello world"
+
+
 # ------------------------------------------------------------------
 # ローカル実行用
 
