@@ -3,6 +3,7 @@ import json
 import os
 from datetime import datetime
 from typing import Any, Dict, Optional
+from urllib.parse import urljoin
 
 import requests
 from bs4 import BeautifulSoup

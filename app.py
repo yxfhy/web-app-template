@@ -23,7 +23,7 @@ from fastapi.templating import Jinja2Templates
 from starlette.middleware.sessions import SessionMiddleware
 
 from database import create_db_and_tables
-from routers import auth, chat, memo
+from routers import auth, chat, dl, memo
 from utils.utils import generate_ai_reply, initialize_clients
 
 BASE_DIR = Path(__file__).resolve()
@@ -68,6 +68,7 @@ app.mount("/static", StaticFiles(directory=BASE_DIR / "static"), name="static")
 app.include_router(auth.router)
 app.include_router(memo.router)
 app.include_router(chat.router)
+app.include_router(dl.router)
 
 
 @app.get("/", response_class=HTMLResponse)
@@ -115,13 +116,6 @@ async def read_root(request: Request):
             "message": message,
         },
     )
-
-
-@app.get("/dl", response_class=HTMLResponse)
-async def dl_page(request: Request):
-    if request.session.get("username") != "yxfhy":
-        raise HTTPException(status_code=403, detail="Access denied")
-    return "hello world"
 
 
 # ------------------------------------------------------------------

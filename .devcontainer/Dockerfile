@@ -24,7 +24,7 @@ RUN apt-get update \
 RUN pip install --no-cache-dir python-dotenv
  # 追加：openai パッケージをインストール
 RUN pip install --no-cache-dir openai
-RUN pip install  --no-cache-dir uvicorn
+RUN pip install  --no-cache-dir uvicorn[standard]
 RUN pip install  --no-cache-dir fastapi
 RUN pip install  --no-cache-dir python-multipart
 RUN pip install  --no-cache-dir debugpy
@@ -34,6 +34,8 @@ RUN pip install  --no-cache-dir sqlmodel passlib[bcrypt] itsdangerous
 RUN pip install --no-cache-dir beautifulsoup4
 RUN pip install --no-cache-dir requests
 RUN pip install --no-cache-dir markdown2
+RUN pip install --no-cache-dir pandas
+
 
 COPY . /app
 
