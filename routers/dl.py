@@ -116,6 +116,13 @@ async def websocket_endpoint(websocket: WebSocket):
             await asyncio.sleep(0.1)  # 進捗を見やすくするための遅延
 
         df = pd.concat(dfs, ignore_index=True)
+
+        # Name列をGoogle検索用のURLに変換した列を追加
+        df["Google_Search_URL"] = df["Name"].apply(
+            lambda name: f"https://www.google.com/search?q="
+            f"{requests.utils.quote(name)}"
+        )
+
         await manager.send_complete(df.to_dict("records"))
     except WebSocketDisconnect:
         manager.disconnect(websocket)

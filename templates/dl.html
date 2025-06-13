@@ -48,10 +48,12 @@
                 const thead = document.createElement('thead');
                 const headerRow = document.createElement('tr');
                 Object.keys(data.data[0]).forEach(key => {
-                    const th = document.createElement('th');
-                    th.className = 'px-4 py-2 border-b border-gray-300 bg-gray-100';
-                    th.textContent = key;
-                    headerRow.appendChild(th);
+                    if (key !== 'Google_Search_URL') {
+                        const th = document.createElement('th');
+                        th.className = 'px-4 py-2 border-b border-gray-300 bg-gray-100';
+                        th.textContent = key;
+                        headerRow.appendChild(th);
+                    }
                 });
                 thead.appendChild(headerRow);
                 table.appendChild(thead);
@@ -60,19 +62,28 @@
                 const tbody = document.createElement('tbody');
                 data.data.forEach(row => {
                     const tr = document.createElement('tr');
-                    Object.values(row).forEach(value => {
-                        const td = document.createElement('td');
-                        td.className = 'px-4 py-2 border-b border-gray-300';
-                        if (typeof value === 'string' && value.startsWith('magnet:')) {
-                            const a = document.createElement('a');
-                            a.href = value;
-                            a.textContent = 'マグネットリンク';
-                            a.className = 'text-blue-600 hover:text-blue-800';
-                            td.appendChild(a);
-                        } else {
-                            td.textContent = value;
+                    Object.entries(row).forEach(([key, value]) => {
+                        if (key !== 'Google_Search_URL') {
+                            const td = document.createElement('td');
+                            td.className = 'px-4 py-2 border-b border-gray-300';
+                            if (typeof value === 'string' && value.startsWith('magnet:')) {
+                                const a = document.createElement('a');
+                                a.href = value;
+                                a.textContent = 'マグネットリンク';
+                                a.className = 'text-blue-600 hover:text-blue-800';
+                                td.appendChild(a);
+                            } else if (key === 'Name') {
+                                const a = document.createElement('a');
+                                a.href = row['Google_Search_URL'];
+                                a.textContent = value;
+                                a.className = 'text-blue-600 hover:text-blue-800';
+                                a.target = '_blank';
+                                td.appendChild(a);
+                            } else {
+                                td.textContent = value;
+                            }
+                            tr.appendChild(td);
                         }
-                        tr.appendChild(td);
                     });
                     tbody.appendChild(tr);
                 });
