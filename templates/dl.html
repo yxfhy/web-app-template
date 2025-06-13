@@ -79,6 +79,13 @@
                                 a.className = 'text-blue-600 hover:text-blue-800';
                                 a.target = '_blank';
                                 td.appendChild(a);
+                            } else if (key === 'Size') {
+                                const a = document.createElement('a');
+                                a.href = row['Link'];
+                                a.textContent = value;
+                                a.className = 'text-blue-600 hover:text-blue-800';
+                                a.target = '_blank';
+                                td.appendChild(a);
                             } else {
                                 td.textContent = value;
                             }

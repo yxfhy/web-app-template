@@ -123,6 +123,8 @@ async def websocket_endpoint(websocket: WebSocket):
             f"{requests.utils.quote(name)}"
         )
 
+        df["Torrent"] = "Torrent"
+
         await manager.send_complete(df.to_dict("records"))
     except WebSocketDisconnect:
         manager.disconnect(websocket)
