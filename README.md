@@ -77,7 +77,7 @@ code .
 - インポートの自動整理（isort）
 - コード品質チェック（Flake8）
 - GitHub Copilot統合
-- Jupyter Notebookサポート
+- Jupyter Notebookサポート 
 
 ## ポート設定
 
@@ -87,4 +87,5 @@ code .
 ## ライセンス
 
 [MIT]
+
 
