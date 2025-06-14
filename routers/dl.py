@@ -13,8 +13,8 @@ templates = Jinja2Templates(directory="templates")
 
 
 class Config:
-    MAX_PAGES = 5
-    CHUNK_SIZE = 100  # 一度に処理するデータ量を制限
+    MAX_PAGES = 1
+    CHUNK_SIZE = 10  # 一度に処理するデータ量を制限
 
 
 async def scrape_sukebei(
