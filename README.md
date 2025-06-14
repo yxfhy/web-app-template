@@ -23,11 +23,12 @@ cd web-app-template
 ```
 
 2. VS Codeでプロジェクトを開きます：
+   
 ```bash
 code .
 ```
 
-3. VS Codeがコンテナのビルドを提案したら、「Reopen in Container」をクリックします。
+1. VS Codeがコンテナのビルドを提案したら、「Reopen in Container」をクリックします。
 
 ## プロジェクト構造
 
