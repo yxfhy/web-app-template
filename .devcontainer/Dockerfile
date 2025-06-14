@@ -43,5 +43,16 @@ COPY . /app
 # ─ コンテナがリッスンするポート ─────────────────────────
 EXPOSE 8000 5678
 
-CMD ["python", "app.py"]
+# CMD ["python", "app.py"]
 
+
+
+# DEBUG_ATTACH=1 なら VS Code からの接続を待つ
+ENV DEBUG_ATTACH=${DEBUG_ATTACH:-0}
+
+CMD if [ "$DEBUG_ATTACH" = "1" ]; then \
+        python -m debugpy --listen 0.0.0.0:5678 --wait-for-client \
+               -m uvicorn app:app --host 0.0.0.0 --port 8000 --workers 1; \
+    else \
+        uvicorn app:app --host 0.0.0.0 --port 8000 --workers 1; \
+    fi
